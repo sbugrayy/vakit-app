@@ -205,10 +205,14 @@ object VakitNotificationHelper {
             // Save layer to safely use PorterDuff DST_OUT without clearing background
             val saveCount = canvas.saveLayer(0f, 0f, size.toFloat(), size.toFloat(), null)
 
+            canvas.save()
+            // Rotate the canvas slightly to tilt the crescent beautifully
+            canvas.rotate(-20f, size / 2f, size / 2f)
+
             // Outer circle of crescent
-            val cx1 = size * 0.40f
+            val cx1 = size * 0.44f
             val cy1 = size * 0.50f
-            val r1 = size * 0.34f
+            val r1 = size * 0.30f
             canvas.drawCircle(cx1, cy1, r1, paint)
 
             // Inner circle (which punches the moon shape)
@@ -217,21 +221,23 @@ object VakitNotificationHelper {
                 style = Paint.Style.FILL
                 xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
             }
-            val cx2 = size * 0.54f
-            val cy2 = size * 0.48f
-            val r2 = size * 0.34f
+            // Offset left for the waning crescent shape (back of moon on the right)
+            val cx2 = cx1 - size * 0.10f
+            val cy2 = cy1 - size * 0.02f
+            val r2 = size * 0.30f
             canvas.drawCircle(cx2, cy2, r2, punchPaint)
 
-            canvas.restoreToCount(saveCount)
+            canvas.restore() // Restore rotation
+            canvas.restoreToCount(saveCount) // Restore DST_OUT layer
 
-            // Draw beautiful five-pointed star to the right of the crescent moon opening
-            val starCx = size * 0.74f
-            val starCy = size * 0.45f
-            val starOuter = size * 0.12f
-            val starInner = size * 0.05f
+            // Draw beautiful upright six-pointed star to the upper-right of the crescent
+            val starCx = size * 0.72f
+            val starCy = size * 0.32f
+            val starOuter = size * 0.09f
+            val starInner = size * 0.045f
             
             val path = Path()
-            val points = 5
+            val points = 6
             var angle = -Math.PI / 2 // Start at top
             val angleIncrement = Math.PI / points
             for (i in 0 until points * 2) {
@@ -249,35 +255,41 @@ object VakitNotificationHelper {
             canvas.drawPath(path, paint)
 
         } else {
-            // Draw mosque shape
-            val bottomMargin = size * 0.90f
-            
-            // Base structure
-            val baseLeft = size * 0.20f
+            // REDESIGNED MOSQUE WITH A CLEAN BOTTOM-RIGHT NUMBER BADGE
+            // Save layer to safely use PorterDuff DST_OUT without clearing the background
+            val saveCount = canvas.saveLayer(0f, 0f, size.toFloat(), size.toFloat(), null)
+
+            // 1. Draw solid white mosque silhouette (shifted slightly left to balance the badge on the right)
+            paint.color = android.graphics.Color.WHITE
+            paint.style = Paint.Style.FILL
+
+            val bottomMargin = size * 0.84f
+
+            // Mosque Base structure
+            val baseLeft = size * 0.18f
             val baseTop = size * 0.48f
-            val baseRight = size * 0.80f
-            val baseBottom = bottomMargin
-            canvas.drawRect(baseLeft, baseTop, baseRight, baseBottom, paint)
+            val baseRight = size * 0.62f
+            canvas.drawRect(baseLeft, baseTop, baseRight, bottomMargin, paint)
 
             // Dome shape (half-circle)
-            val domeLeft = size * 0.25f
-            val domeTop = size * 0.24f
-            val domeRight = size * 0.75f
-            val domeBottom = size * 0.74f
+            val domeLeft = size * 0.22f
+            val domeTop = size * 0.22f
+            val domeRight = size * 0.58f
+            val domeBottom = size * 0.58f
             val domeRect = RectF(domeLeft, domeTop, domeRight, domeBottom)
             canvas.drawArc(domeRect, 180f, 180f, true, paint)
 
             // Dome top spire
-            val spireX = size / 2f
-            paint.strokeWidth = 2f
+            val spireX = size * 0.40f
+            paint.strokeWidth = 3f
             paint.style = Paint.Style.STROKE
-            canvas.drawLine(spireX, size * 0.16f, spireX, size * 0.24f, paint)
+            canvas.drawLine(spireX, size * 0.13f, spireX, size * 0.22f, paint)
             paint.style = Paint.Style.FILL
 
             // Left Minaret
-            val mlLeft = size * 0.08f
+            val mlLeft = size * 0.05f
             val mlTop = size * 0.22f
-            val mlRight = size * 0.16f
+            val mlRight = size * 0.13f
             canvas.drawRect(mlLeft, mlTop, mlRight, bottomMargin, paint)
             
             val leftCap = Path().apply {
@@ -289,9 +301,9 @@ object VakitNotificationHelper {
             canvas.drawPath(leftCap, paint)
 
             // Right Minaret
-            val mrLeft = size * 0.84f
+            val mrLeft = size * 0.67f
             val mrTop = size * 0.22f
-            val mrRight = size * 0.92f
+            val mrRight = size * 0.75f
             canvas.drawRect(mrLeft, mrTop, mrRight, bottomMargin, paint)
             
             val rightCap = Path().apply {
@@ -302,17 +314,48 @@ object VakitNotificationHelper {
             }
             canvas.drawPath(rightCap, paint)
 
-            // Punch out the minutes number inside the dome/base using DST_OUT
+            // 2. Clear a beautiful cut-out GAP for the badge at bottom-right of the canvas (DST_OUT)
+            val gapPaint = Paint().apply {
+                isAntiAlias = true
+                style = Paint.Style.FILL
+                xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+            }
+            val gapLeft = size * 0.42f
+            val gapTop = size * 0.38f
+            val gapRight = size * 1.00f
+            val gapBottom = size * 1.00f
+            val gapRect = RectF(gapLeft, gapTop, gapRight, gapBottom)
+            canvas.drawRoundRect(gapRect, size * 0.15f, size * 0.15f, gapPaint)
+
+            // 3. Draw the solid white Badge background (rounded rectangle)
+            val badgeLeft = size * 0.50f
+            val badgeTop = size * 0.46f
+            val badgeRight = size * 0.98f
+            val badgeBottom = size * 0.90f
+            val badgeRect = RectF(badgeLeft, badgeTop, badgeRight, badgeBottom)
+            paint.color = android.graphics.Color.WHITE
+            paint.style = Paint.Style.FILL
+            canvas.drawRoundRect(badgeRect, size * 0.11f, size * 0.11f, paint)
+
+            // 4. Punch out the number inside the badge (DST_OUT)
             val textPaint = Paint().apply {
                 isAntiAlias = true
                 xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
-                textSize = if (minutes >= 10) size * 0.46f else size * 0.54f
+                textSize = if (minutes >= 10) size * 0.26f else size * 0.32f
                 typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
                 textAlign = Paint.Align.CENTER
             }
-            // Align the text perfectly inside the main dome/building structure
-            val textY = if (minutes >= 10) size * 0.76f else size * 0.78f
-            canvas.drawText(minutes.toString(), size / 2f, textY, textPaint)
+            val badgeCx = (badgeLeft + badgeRight) / 2f
+            
+            // Mathematically precise vertical centering
+            val textHeight = textPaint.descent() - textPaint.ascent()
+            val textOffset = textHeight / 2f - textPaint.descent()
+            val badgeCy = (badgeTop + badgeBottom) / 2f
+            val textY = badgeCy + textOffset
+
+            canvas.drawText(minutes.toString(), badgeCx, textY, textPaint)
+
+            canvas.restoreToCount(saveCount)
         }
 
         return IconCompat.createWithBitmap(bitmap)
