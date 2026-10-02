@@ -143,6 +143,10 @@ Duman testleri (2026-10-02, kayıtlar `.agy/runs/000*.jsonl`):
 | Salt-okuma | AGENTS.md'yi okudu, kuralları doğru özetledi |
 | `accept-edits` ile köke yazma | yazdı (sınır delindi) |
 | Bayraksız köke yazma | `denied_actions: write_file` ile reddedildi |
+| Bayraksız `lib/` ve `test/` altına yazma (görev 001) | yazdı, yalnız brifteki 3 dosya |
+| Bayraksız `flutter --version` denemesi | `denied_actions: command` ile reddedildi |
+
+`--sandbox` gerekmiyor: komut izni olmadığı için `run_command` zaten reddediliyor.
 
 ## Görev Akışı (her kod işi)
 

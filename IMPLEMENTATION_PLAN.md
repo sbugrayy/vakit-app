@@ -57,12 +57,14 @@ yürüyor.
 - [x] Duman testi (a): salt-okuma görevi doğru cevap verdi
 - [x] Duman testi (c): bayraksız çağrıda repo köküne yazma `denied_actions` ile reddedildi. `accept-edits` ile reddedilmiyordu; bayrak çağrıdan çıkarıldı
 - [x] `tool/agy_rapor.py`: stream-json özetleyici (rapor, araçlar, retler, komut denemeleri)
-- [ ] Duman testi (b) + ilk gerçek agy görevi: `lib/shared/clock.dart` (`Clock` + `SystemClock`) + test; döngünün tam provası
-- [ ] `--sandbox` bayrağı denenir; dosya yazmayı bozmuyorsa standart çağrıya eklenir
+- [x] Duman testi (b) + ilk gerçek agy görevi: `lib/shared/clock.dart` (`Clock` + `SystemClock`) + test. 001'de iki `cascade_invocations` uyarısı çıktı, 001b düzeltme turunda giderildi; 6 test, `lib/` kapsaması %100
+- [x] Duman testi (d): komut denemesi (`flutter --version`) `denied_actions: command` ile reddedildi. `--sandbox` gereksiz bulundu
+- [x] AGENTS.md'ye en sık yakalanan lint kuralları tablosu eklendi (düzeltme turlarını azaltmak için)
+- [ ] İskeletin emülatörde açıldığının görülmesi (APK derlemesi bitince)
 
 ### Faz 1 — Tasarım (Stitch); Faz 2 ile paralel
 
-- [ ] Claude `design/STITCH_PROMPTS.md`'yi yazar. İçeriği: tasarım yönü, 2–3 stil varyantı, ekran başına prompt
+- [x] Claude `design/STITCH_PROMPTS.md`'yi yazar. İçeriği: tasarım sistemi, 3 stil varyantı (Gökyüzü / Sade / Gece mavisi), ekran başına prompt, dışa aktarım klasör yapısı
 - [ ] Ekranlar: Ana Sayfa · Kıble · Aylık Vakitler · Konum Seçimi · Ayarlar · İzinler · Bildirim (kapalı/açık)
 - [ ] Buğra Stitch'te üretir, `design/stitch/<ekran>/{code.html,screen.png}` + `design/stitch/DESIGN.md` olarak repoya ekler
 - [ ] Claude inceler: tutarlılık, açık/koyu, erişilebilir kontrast

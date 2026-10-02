@@ -41,6 +41,23 @@ bile teslimatı geri çevirir.
   önce gelirse `dangling_library_doc_comments` hatası verir).
 - `print` yok. Kişisel veri (konum, koordinat) hiçbir yerde loglanmaz.
 
+Analizin bu projede en sık yakaladığı kurallar. Yazarken bunlara baştan uy,
+düzeltme turu gerekmesin:
+
+| Kural | Ne ister |
+|---|---|
+| `cascade_invocations` | Nesneyi oluşturduktan hemen sonra aynı değişkende çağrı yapılıyorsa çağrıyı oluşturma ifadesine `..` ile bağla: `final c = FixedClock(t)..advance(d);` |
+| `directives_ordering` | `dart:` → `package:` → göreli import; her grup kendi içinde alfabetik |
+| `prefer_const_constructors` / `prefer_const_literals_to_create_immutables` | Sabit olabilen her kurucu ve liste `const` |
+| `sort_constructors_first` | Kurucular alanlardan ve metotlardan önce |
+| `avoid_redundant_argument_values` | Varsayılan değere eşit argümanı yazma |
+| `prefer_final_locals` | Yeniden atanmayan yerel değişken `final` |
+| `avoid_catches_without_on_clauses` | `on Exception catch (e)` |
+| `lines_longer_than_80_chars` | Satır en fazla 80 karakter |
+
+Test dosyaları `test/helpers/` altındaki yardımcıları göreli yolla içe aktarır
+(`../helpers/fixed_clock.dart`); `package:vakit/` yalnız `lib/`'i gösterir.
+
 ## Tasarım token'ları — elle değer yazma
 
 Renk, boşluk, köşe yarıçapı, yazı stili ve görsel yolu **asla** elle yazılmaz:
