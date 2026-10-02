@@ -1,21 +1,40 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Vakit
 
-# Run and deploy your AI Studio app
+Türkiye için namaz vakitleri ve kıble uygulaması (Android, Flutter).
 
-This contains everything you need to run your app locally.
+- **Diyanet ile birebir vakitler**: ilçe bazlı, 30 günlük önbellek; internet
+  yoksa cihazda yedek hesap.
+- **Canlı geri sayımlı kalıcı bildirim**: sıradaki vakit ve saniye saniye işleyen
+  geri sayım, uygulama kapalıyken de.
+- **Kıble pusulası**: manyetik sapması düzeltilmiş, gerçek kuzeye göre.
 
-View your app in AI Studio: https://ai.studio/apps/4c808fc0-44e8-45f9-912f-989ad90a6cad
+> Durum: Flutter ile yeniden yazım sürüyor (`flutter-rewrite` dalı). İlk sürüm
+> (Kotlin/Compose) `main` dalında. İlerleme için `IMPLEMENTATION_PLAN.md`.
 
-## Run Locally
+## Çalıştırma
 
-**Prerequisites:**  [Android Studio](https://developer.android.com/studio)
+Gereksinimler: Flutter 3.44+, Android SDK, Android 8.0+ (API 26) cihaz ya da
+emülatör.
 
+```bash
+flutter pub get
+flutter run
+```
 
-1. Open Android Studio
-2. Select **Open** and choose the directory containing this project
-3. Allow Android Studio to fix any incompatibilities as it imports the project.
-4. Create a file named `.env` in the project directory and set `GEMINI_API_KEY` in that file to your Gemini API key (see `.env.example` for an example)
-5. Remove this line from the app's `build.gradle.kts` file: `signingConfig = signingConfigs.getByName("debugConfig")`
-6. Run the app on an emulator or physical device
+Bu makinede Gradle, Norton'un TLS taraması yüzünden `PKIX path building failed`
+verirse `CLAUDE.md` → "Bilinen Ortam Sorunları" bölümüne bak.
+
+## Geliştirme düzeni
+
+Kod, Claude Code (şef: plan, terminal, doğrulama) ve agy (Antigravity CLI,
+Gemini: kod yazımı) arasında bölünmüş bir orkestrayla yazılıyor:
+
+- `CLAUDE.md`: proje bağlamı, iş bölümü, agy çağrısı, doğrulama kuralları
+- `AGENTS.md`: kod yazan ajanın uyduğu kurallar
+- `ANTIGRAVITY_CHECKLIST.md`: agy taslaklarında aranan hata kalıpları
+- `tool/verify_agy.sh`: her agy teslimatından sonra çalışan doğrulama
+
+## Veri kaynağı
+
+Vakitler Diyanet İşleri Başkanlığı verisinden, `ezanvakti.emushaf.net`
+üzerinden alınır.
