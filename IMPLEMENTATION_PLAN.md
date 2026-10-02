@@ -43,6 +43,30 @@ yürüyor.
 
 ## 4. Fazlar
 
+### Kaldığımız yer (2026-10-02 akşamı, Buğra'nın isteğiyle durduruldu)
+
+Faz 0'ın yalnız Android derlemesi ve emülatör kontrolü kaldı. Geri kalan her şey
+commit'li ve `origin/flutter-rewrite`'ta. Yarın sırayla:
+
+1. **APK derlemesi.** Gradle 9.1.0 dağıtımı (`gradle-9.1.0-all.zip`, ~225 MB)
+   Norton taraması + yavaş internet yüzünden ~3,4 MB/dk iniyordu. 174 MB'ta
+   durduruldu. Wrapper yarım indirmeyi sürdürmez, baştan indirir. Ayrıca AGP
+   9.0.1 ve Kotlin 2.3.20 eklentileri önbellekte yok; ilk derleme onları da
+   indirecek. İki yol var, **Buğra seçer**:
+   - (a) Varsayılanda kal. Derlemeyi uzun zaman aşımıyla başlat
+     (`run_in_background`, timeout 7200000). İnternet uygunken bırak.
+   - (b) Önbellekteki Gradle'ı kullan. `~/.gradle/wrapper/dists/` altında
+     `gradle-9.5.0-bin` hazır. `android/gradle/wrapper/gradle-wrapper.properties`
+     içinde `distributionUrl` değeri `gradle-9.5.0-bin.zip` yapılır; 9.0.0
+     olmaz, AGP 9.0.1 en az 9.1 istiyor. Dağıtım indirmesi kalkar, eklenti
+     indirmesi yine olur.
+2. Derleme bitince `Pixel_8` emülatörünü başlat (snapshot'tan saniyeler içinde
+   açılıyor), `flutter run -d emulator-5554` ile iskeletin açıldığını gör.
+   Faz 0 kapanır.
+3. Buğra: `design/STITCH_PROMPTS.md` ile Stitch'te ekranları üretir (Faz 1).
+4. Paralelde Faz 2 başlayabilir. Fixture'lar `curl` ile alınır, birkaç KB.
+   `shared_preferences` + `adhan` pub.dev'den küçük indirmeler.
+
 ### Faz 0 — Kurulum ve orkestra (Claude)
 
 - [x] Repo klonlandı, `flutter-rewrite` dalı, Kotlin dosyaları kaldırıldı (git geçmişinde)
@@ -51,7 +75,7 @@ yürüyor.
 - [x] `CLAUDE.md`, `AGENTS.md`, `ANTIGRAVITY_CHECKLIST.md`, bu plan, README
 - [x] `.claude/settings.json`, `agy-gorev` ve `stitch-to-flutter` skill'leri, `tool/verify_agy.sh`
 - [x] agy global izin dosyası güncellendi (BOM'suz, yedek `settings.json.bak`)
-- [ ] Debug APK derlemesi (`GRADLE_OPTS` + Norton truststore; Gradle 9.1.0 dağıtımı ilk kez iniyor)
+- [ ] Debug APK derlemesi. `GRADLE_OPTS` + Norton truststore ile PKIX aşıldı; Gradle 9.1.0 dağıtımı indirilirken durduruldu (bkz. "Kaldığımız yer")
 - [x] agy oturumu (Buğra etkileşimli `agy` ile giriş yaptı, Settings Error yok)
 - [x] `agy models` → `gemini-3.8-flash-high` ("Gemini 3.8 Flash (High)")
 - [x] Duman testi (a): salt-okuma görevi doğru cevap verdi

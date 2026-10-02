@@ -287,6 +287,16 @@ emülatörde/cihazda çalıştırma. Hiçbiri atlanmaz.
   ```bash
   export GRADLE_OPTS="-Djavax.net.ssl.trustStore=C:/Users/bugra/.gradle/cacerts-with-norton -Djavax.net.ssl.trustStorePassword=changeit"
   ```
+- **İnternet yavaş, büyük indirmeler saatler sürebilir.** Norton taraması
+  altında Gradle dağıtımı ~3,4 MB/dk indi. Bu yüzden:
+  - İlk derlemeyi uzun zaman aşımıyla başlat (`run_in_background`, timeout
+    7200000). 30 dk'lık sınıra takılan görev kabuğu öldürüyor ama Gradle
+    wrapper'ı (java) arkada çalışmaya devam ediyor. Durdurmak için süreci
+    `taskkill` ile kapat.
+  - Wrapper yarım indirmeyi sürdürmez.
+  - Önbellekte hazır dağıtımlar: `gradle-9.0.0-all`, `gradle-9.5.0-bin`. AGP
+    9.0.1 en az Gradle 9.1 istiyor.
+  - Yüzlerce MB'lık bir indirme başlatmadan önce Buğra'ya sor.
 - **intl 0.20.2 sabit**: Flutter 3.44.6'nın `flutter_localizations`'ı bunu
   istiyor; yükseltme `pub get`'i kırar (gerekçesi `pubspec.yaml`'da).
 - **Satır sonları**: makinede `core.autocrlf=true`; `.gitattributes` her şeyi
