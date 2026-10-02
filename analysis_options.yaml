@@ -1,0 +1,12 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+linter:
+  rules:
+    public_member_api_docs: false
+    # Repository pattern projenin mimari temeli: her modül
+    # `abstract XRepository` + gerçek/çevrimdışı uygulamalarla geliyor.
+    # Tek metotlu bir sözleşmede bu kural "sınıfı sil, üst düzey fonksiyon
+    # yaz" diyor; bu, uygulamaların değiştirilebilirliğini ortadan kaldırır.
+    # Kural inline `// ignore:` ile değil burada, tek yerde ve gerekçesiyle
+    # kapatılıyor (finans-app ile aynı karar).
+    one_member_abstracts: false

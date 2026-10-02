@@ -1,0 +1,8 @@
+# Bu makinede core.autocrlf=true. Satır sonları depoda ve çalışma ağacında
+# LF'e sabitleniyor: tool/*.sh CRLF ile checkout edilirse Git Bash
+# "$'\r': command not found" ile kırılıyor, ayrıca agy'nin LF yazdığı
+# dosyalarla Claude'un yazdıkları arasında gereksiz diff oluşmuyor.
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
