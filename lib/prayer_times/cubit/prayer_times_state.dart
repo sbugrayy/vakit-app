@@ -38,24 +38,33 @@ final class PrayerTimesLoaded extends PrayerTimesState {
     required this.location,
     required this.result,
     required this.status,
+    this.exactAlarmAllowed = true,
   });
 
   final SelectedLocation location;
   final PrayerTimesResult result;
   final ScheduleStatus status;
+  final bool exactAlarmAllowed;
 
   PrayerTimesLoaded copyWith({
     SelectedLocation? location,
     PrayerTimesResult? result,
     ScheduleStatus? status,
+    bool? exactAlarmAllowed,
   }) {
     return PrayerTimesLoaded(
       location: location ?? this.location,
       result: result ?? this.result,
       status: status ?? this.status,
+      exactAlarmAllowed: exactAlarmAllowed ?? this.exactAlarmAllowed,
     );
   }
 
   @override
-  List<Object?> get props => [location, result, status];
+  List<Object?> get props => [
+    location,
+    result,
+    status,
+    exactAlarmAllowed,
+  ];
 }

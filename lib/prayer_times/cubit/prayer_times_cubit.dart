@@ -49,16 +49,6 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
       if (isClosed) {
         return;
       }
-      final status = PrayerSchedule(result.days).statusAt(_clock.now());
-      emit(
-        PrayerTimesLoaded(
-          location: location,
-          result: result,
-          status: status,
-        ),
-      );
-      _startTimer();
-
       try {
         await _notificationBridge.sync(
           locationLabel: location.districtName,
@@ -68,6 +58,22 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
       } on PlatformException {
         // Bildirim senkronizasyon hatası yutulur; ana ekranı bozmasın.
       }
+
+      final exactAlarmAllowed = await _fetchExactAlarmAllowed();
+      if (isClosed) {
+        return;
+      }
+
+      final status = PrayerSchedule(result.days).statusAt(_clock.now());
+      emit(
+        PrayerTimesLoaded(
+          location: location,
+          result: result,
+          status: status,
+          exactAlarmAllowed: exactAlarmAllowed,
+        ),
+      );
+      _startTimer();
     } on PrayerTimesException {
       if (isClosed) {
         return;
@@ -81,8 +87,38 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
     }
   }
 
+  Future<void> refreshPermissionStatus() async {
+    final current = state;
+    if (current is! PrayerTimesLoaded) {
+      return;
+    }
+
+    final allowed = await _fetchExactAlarmAllowed();
+    if (isClosed) {
+      return;
+    }
+
+    final latest = state;
+    if (latest is PrayerTimesLoaded) {
+      emit(latest.copyWith(exactAlarmAllowed: allowed));
+    }
+  }
+
+  Future<void> openExactAlarmSettings() async {
+    await _notificationBridge.openExactAlarmSettings();
+  }
+
   Future<bool> requestNotificationPermission() {
     return _notificationBridge.requestNotificationPermission();
+  }
+
+  Future<bool> _fetchExactAlarmAllowed() async {
+    try {
+      final status = await _notificationBridge.status();
+      return status.exactAlarmAllowed;
+    } on PlatformException {
+      return true;
+    }
   }
 
   void _startTimer() {

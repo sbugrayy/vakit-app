@@ -55,13 +55,27 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     unawaited(
       context.read<PrayerTimesCubit>().requestNotificationPermission(),
     );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      unawaited(context.read<PrayerTimesCubit>().refreshPermissionStatus());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   Future<void> _handleSelectLocation() async {
@@ -88,7 +102,8 @@ class _HomeViewState extends State<HomeView> {
             previous.status.next?.date != current.status.next?.date ||
             previous.status.current?.prayer != current.status.current?.prayer ||
             previous.status.today != current.status.today ||
-            previous.status.daysRemaining != current.status.daysRemaining;
+            previous.status.daysRemaining != current.status.daysRemaining ||
+            previous.exactAlarmAllowed != current.exactAlarmAllowed;
       },
       builder: (context, state) {
         return switch (state) {
@@ -291,6 +306,10 @@ class _LoadedView extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
             ],
+            if (!state.exactAlarmAllowed) ...[
+              _buildExactAlarmBanner(context),
+              const SizedBox(height: AppSpacing.md),
+            ],
             _buildNextPrayerCard(context, state, utcOffset),
             const SizedBox(height: AppSpacing.lg),
             if (displayDay != null) ...[
@@ -298,6 +317,47 @@ class _LoadedView extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               _buildPrayersList(context, state, displayDay),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExactAlarmBanner(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      elevation: 0,
+      color: colorScheme.tertiaryContainer,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Bildirimin vakit girer girmez güncellenmesi için 'Alarmlar "
+              "ve hatırlatıcılar' iznini verin.",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onTertiaryContainer,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: colorScheme.onTertiaryContainer,
+                ),
+                onPressed: () => unawaited(
+                  context.read<PrayerTimesCubit>().openExactAlarmSettings(),
+                ),
+                child: const Text('İzin ver'),
+              ),
+            ),
           ],
         ),
       ),

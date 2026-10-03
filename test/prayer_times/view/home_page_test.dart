@@ -1,5 +1,6 @@
 // HomePage ve HomeView widget testleri.
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -65,6 +66,12 @@ void main() {
     when(
       () => mockCubit.requestNotificationPermission(),
     ).thenAnswer((_) async => true);
+    when(
+      () => mockCubit.openExactAlarmSettings(),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockCubit.refreshPermissionStatus(),
+    ).thenAnswer((_) async {});
     when(
       () => mockCubit.load(forceRefresh: any(named: 'forceRefresh')),
     ).thenAnswer((_) async {});
@@ -481,6 +488,171 @@ void main() {
 
         expect(find.byType(HomeView), findsOneWidget);
         expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'Loaded: exactAlarmAllowed false iken bant ve İzin ver butonu görünür, '
+      'tıklanınca openExactAlarmSettings çağrılır (açık ve koyu tema)',
+      (tester) async {
+        configure360dp(tester);
+
+        final status = PrayerSchedule(days).statusAt(clock.now());
+        final loadedState = PrayerTimesLoaded(
+          location: istanbul,
+          result: PrayerTimesResult(
+            days: days,
+            source: PrayerDataSource.diyanet,
+          ),
+          status: status,
+          exactAlarmAllowed: false,
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(
+              state: loadedState,
+              brightness: brightness,
+            ),
+          );
+          await tester.pump();
+
+          expect(
+            find.text(
+              "Bildirimin vakit girer girmez güncellenmesi için 'Alarmlar "
+              "ve hatırlatıcılar' iznini verin.",
+            ),
+            findsOneWidget,
+          );
+          expect(find.text('İzin ver'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+
+          await tester.tap(find.text('İzin ver'));
+          await tester.pump();
+          verify(() => mockCubit.openExactAlarmSettings()).called(1);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'Loaded: exactAlarmAllowed true iken bant ve İzin ver butonu '
+      'gösterilmez',
+      (tester) async {
+        configure360dp(tester);
+
+        final status = PrayerSchedule(days).statusAt(clock.now());
+        final loadedState = PrayerTimesLoaded(
+          location: istanbul,
+          result: PrayerTimesResult(
+            days: days,
+            source: PrayerDataSource.diyanet,
+          ),
+          status: status,
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(
+              state: loadedState,
+              brightness: brightness,
+            ),
+          );
+          await tester.pump();
+
+          expect(
+            find.text(
+              "Bildirimin vakit girer girmez güncellenmesi için 'Alarmlar "
+              "ve hatırlatıcılar' iznini verin.",
+            ),
+            findsNothing,
+          );
+          expect(find.text('İzin ver'), findsNothing);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'Uygulama resumed durumuna geçtiğinde refreshPermissionStatus çağrılır',
+      (tester) async {
+        configure360dp(tester);
+
+        final status = PrayerSchedule(days).statusAt(clock.now());
+        final loadedState = PrayerTimesLoaded(
+          location: istanbul,
+          result: PrayerTimesResult(
+            days: days,
+            source: PrayerDataSource.diyanet,
+          ),
+          status: status,
+        );
+
+        await tester.pumpWidget(buildSubject(state: loadedState));
+        await tester.pump();
+
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pump();
+
+        verify(() => mockCubit.refreshPermissionStatus()).called(1);
+
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.paused,
+        );
+        await tester.pump();
+
+        verifyNever(() => mockCubit.refreshPermissionStatus());
+      },
+    );
+
+    testWidgets(
+      'exactAlarmAllowed güncellendiğinde HomeView yeniden çizilir',
+      (tester) async {
+        configure360dp(tester);
+
+        final controller = StreamController<PrayerTimesState>();
+        addTearDown(() => unawaited(controller.close()));
+
+        final status = PrayerSchedule(days).statusAt(clock.now());
+        final stateWithBanner = PrayerTimesLoaded(
+          location: istanbul,
+          result: PrayerTimesResult(
+            days: days,
+            source: PrayerDataSource.diyanet,
+          ),
+          status: status,
+          exactAlarmAllowed: false,
+        );
+        final stateWithoutBanner = stateWithBanner.copyWith(
+          exactAlarmAllowed: true,
+        );
+
+        whenListen(
+          mockCubit,
+          controller.stream,
+          initialState: stateWithBanner,
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
+            themeMode: ThemeMode.light,
+            home: BlocProvider<PrayerTimesCubit>.value(
+              value: mockCubit,
+              child: const HomeView(),
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(find.text('İzin ver'), findsOneWidget);
+
+        controller.add(stateWithoutBanner);
+        await tester.pump();
+        await tester.pump();
+        expect(find.text('İzin ver'), findsNothing);
       },
     );
   });

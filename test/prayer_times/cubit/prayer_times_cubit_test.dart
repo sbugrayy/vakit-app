@@ -63,6 +63,16 @@ void main() {
       source: PrayerDataSource.diyanet,
       fetchedAt: DateTime.utc(2026, 9, 30, 7),
     );
+
+    when(
+      () => notificationBridge.status(),
+    ).thenAnswer(
+      (_) async => const NotificationStatus(
+        notificationsGranted: true,
+        exactAlarmAllowed: true,
+        enabled: true,
+      ),
+    );
   });
 
   group('PrayerTimesState', () {
@@ -83,7 +93,7 @@ void main() {
       );
       expect(
         loaded.props,
-        equals([istanbul, prayerTimesResult, status]),
+        equals([istanbul, prayerTimesResult, status, true]),
       );
     });
 
@@ -121,6 +131,9 @@ void main() {
       );
       final withResult = loaded.copyWith(result: newResult);
       expect(withResult.result, equals(newResult));
+
+      final withExactAlarm = loaded.copyWith(exactAlarmAllowed: false);
+      expect(withExactAlarm.exactAlarmAllowed, isFalse);
     });
   });
 
@@ -383,6 +396,321 @@ void main() {
         ).called(1);
 
         await cubit.close();
+      },
+    );
+
+    blocTest<PrayerTimesCubit, PrayerTimesState>(
+      'status() exactAlarmAllowed: false döndürdüğünde '
+      'Loaded.exactAlarmAllowed false olur',
+      setUp: () {
+        when(() => locationStore.load()).thenAnswer((_) async => istanbul);
+        when(
+          () => repository.load(istanbul),
+        ).thenAnswer((_) async => prayerTimesResult);
+        when(
+          () => notificationBridge.sync(
+            locationLabel: any(named: 'locationLabel'),
+            days: any(named: 'days'),
+            enabled: any(named: 'enabled'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => notificationBridge.status(),
+        ).thenAnswer(
+          (_) async => const NotificationStatus(
+            notificationsGranted: true,
+            exactAlarmAllowed: false,
+            enabled: true,
+          ),
+        );
+      },
+      build: () => PrayerTimesCubit(
+        locationStore: locationStore,
+        repository: repository,
+        notificationBridge: notificationBridge,
+        clock: clock,
+        tick: testTick,
+      ),
+      act: (cubit) => cubit.load(),
+      expect: () => [
+        const PrayerTimesLoading(),
+        isA<PrayerTimesLoaded>().having(
+          (s) => s.exactAlarmAllowed,
+          'exactAlarmAllowed',
+          isFalse,
+        ),
+      ],
+    );
+
+    blocTest<PrayerTimesCubit, PrayerTimesState>(
+      'status() PlatformException fırlattığında '
+      'Loaded.exactAlarmAllowed true kabul edilir',
+      setUp: () {
+        when(() => locationStore.load()).thenAnswer((_) async => istanbul);
+        when(
+          () => repository.load(istanbul),
+        ).thenAnswer((_) async => prayerTimesResult);
+        when(
+          () => notificationBridge.sync(
+            locationLabel: any(named: 'locationLabel'),
+            days: any(named: 'days'),
+            enabled: any(named: 'enabled'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => notificationBridge.status(),
+        ).thenThrow(PlatformException(code: 'UNAVAILABLE'));
+      },
+      build: () => PrayerTimesCubit(
+        locationStore: locationStore,
+        repository: repository,
+        notificationBridge: notificationBridge,
+        clock: clock,
+        tick: testTick,
+      ),
+      act: (cubit) => cubit.load(),
+      expect: () => [
+        const PrayerTimesLoading(),
+        isA<PrayerTimesLoaded>().having(
+          (s) => s.exactAlarmAllowed,
+          'exactAlarmAllowed',
+          isTrue,
+        ),
+      ],
+    );
+
+    blocTest<PrayerTimesCubit, PrayerTimesState>(
+      'refreshPermissionStatus Loaded durumunda izin durumunu günceller',
+      setUp: () {
+        when(() => locationStore.load()).thenAnswer((_) async => istanbul);
+        when(
+          () => repository.load(istanbul),
+        ).thenAnswer((_) async => prayerTimesResult);
+        when(
+          () => notificationBridge.sync(
+            locationLabel: any(named: 'locationLabel'),
+            days: any(named: 'days'),
+            enabled: any(named: 'enabled'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => notificationBridge.status(),
+        ).thenAnswer(
+          (_) async => const NotificationStatus(
+            notificationsGranted: true,
+            exactAlarmAllowed: false,
+            enabled: true,
+          ),
+        );
+      },
+      build: () => PrayerTimesCubit(
+        locationStore: locationStore,
+        repository: repository,
+        notificationBridge: notificationBridge,
+        clock: clock,
+        tick: testTick,
+      ),
+      act: (cubit) async {
+        await cubit.load();
+        when(
+          () => notificationBridge.status(),
+        ).thenAnswer(
+          (_) async => const NotificationStatus(
+            notificationsGranted: true,
+            exactAlarmAllowed: true,
+            enabled: true,
+          ),
+        );
+        await cubit.refreshPermissionStatus();
+      },
+      expect: () => [
+        const PrayerTimesLoading(),
+        isA<PrayerTimesLoaded>().having(
+          (s) => s.exactAlarmAllowed,
+          'exactAlarmAllowed',
+          isFalse,
+        ),
+        isA<PrayerTimesLoaded>().having(
+          (s) => s.exactAlarmAllowed,
+          'exactAlarmAllowed',
+          isTrue,
+        ),
+      ],
+    );
+
+    blocTest<PrayerTimesCubit, PrayerTimesState>(
+      'refreshPermissionStatus Loaded olmayan durumda hiçbir şey yapmaz',
+      build: () => PrayerTimesCubit(
+        locationStore: locationStore,
+        repository: repository,
+        notificationBridge: notificationBridge,
+        clock: clock,
+        tick: testTick,
+      ),
+      act: (cubit) => cubit.refreshPermissionStatus(),
+      expect: () => <PrayerTimesState>[],
+      verify: (_) {
+        verifyZeroInteractions(notificationBridge);
+      },
+    );
+
+    blocTest<PrayerTimesCubit, PrayerTimesState>(
+      'refreshPermissionStatus PlatformException durumunda '
+      'exactAlarmAllowed true yapar',
+      setUp: () {
+        when(() => locationStore.load()).thenAnswer((_) async => istanbul);
+        when(
+          () => repository.load(istanbul),
+        ).thenAnswer((_) async => prayerTimesResult);
+        when(
+          () => notificationBridge.sync(
+            locationLabel: any(named: 'locationLabel'),
+            days: any(named: 'days'),
+            enabled: any(named: 'enabled'),
+          ),
+        ).thenAnswer((_) async {});
+        when(
+          () => notificationBridge.status(),
+        ).thenAnswer(
+          (_) async => const NotificationStatus(
+            notificationsGranted: true,
+            exactAlarmAllowed: false,
+            enabled: true,
+          ),
+        );
+      },
+      build: () => PrayerTimesCubit(
+        locationStore: locationStore,
+        repository: repository,
+        notificationBridge: notificationBridge,
+        clock: clock,
+        tick: testTick,
+      ),
+      act: (cubit) async {
+        await cubit.load();
+        when(
+          () => notificationBridge.status(),
+        ).thenThrow(PlatformException(code: 'ERROR'));
+        await cubit.refreshPermissionStatus();
+      },
+      expect: () => [
+        const PrayerTimesLoading(),
+        isA<PrayerTimesLoaded>().having(
+          (s) => s.exactAlarmAllowed,
+          'exactAlarmAllowed',
+          isFalse,
+        ),
+        isA<PrayerTimesLoaded>().having(
+          (s) => s.exactAlarmAllowed,
+          'exactAlarmAllowed',
+          isTrue,
+        ),
+      ],
+    );
+
+    test(
+      'openExactAlarmSettings çağrısını NotificationBridge üzerine iletir',
+      () async {
+        when(
+          () => notificationBridge.openExactAlarmSettings(),
+        ).thenAnswer((_) async => true);
+
+        final cubit = PrayerTimesCubit(
+          locationStore: locationStore,
+          repository: repository,
+          notificationBridge: notificationBridge,
+          clock: clock,
+        );
+
+        await cubit.openExactAlarmSettings();
+
+        verify(() => notificationBridge.openExactAlarmSettings()).called(1);
+
+        await cubit.close();
+      },
+    );
+
+    test(
+      'isClosed iken _fetchExactAlarmAllowed sonrası emit edilmez',
+      () async {
+        when(() => locationStore.load()).thenAnswer((_) async => istanbul);
+        when(
+          () => repository.load(istanbul),
+        ).thenAnswer((_) async => prayerTimesResult);
+        when(
+          () => notificationBridge.sync(
+            locationLabel: any(named: 'locationLabel'),
+            days: any(named: 'days'),
+            enabled: any(named: 'enabled'),
+          ),
+        ).thenAnswer((_) async {});
+
+        late final PrayerTimesCubit cubit;
+        when(() => notificationBridge.status()).thenAnswer((_) async {
+          await cubit.close();
+          return const NotificationStatus(
+            notificationsGranted: true,
+            exactAlarmAllowed: true,
+            enabled: true,
+          );
+        });
+
+        cubit = PrayerTimesCubit(
+          locationStore: locationStore,
+          repository: repository,
+          notificationBridge: notificationBridge,
+          clock: clock,
+          tick: testTick,
+        );
+
+        await cubit.load();
+        expect(cubit.isClosed, isTrue);
+      },
+    );
+
+    test(
+      'isClosed iken refreshPermissionStatus emit etmez',
+      () async {
+        when(() => locationStore.load()).thenAnswer((_) async => istanbul);
+        when(
+          () => repository.load(istanbul),
+        ).thenAnswer((_) async => prayerTimesResult);
+        when(
+          () => notificationBridge.sync(
+            locationLabel: any(named: 'locationLabel'),
+            days: any(named: 'days'),
+            enabled: any(named: 'enabled'),
+          ),
+        ).thenAnswer((_) async {});
+        when(() => notificationBridge.status()).thenAnswer(
+          (_) async => const NotificationStatus(
+            notificationsGranted: true,
+            exactAlarmAllowed: false,
+            enabled: true,
+          ),
+        );
+
+        final cubit = PrayerTimesCubit(
+          locationStore: locationStore,
+          repository: repository,
+          notificationBridge: notificationBridge,
+          clock: clock,
+          tick: testTick,
+        );
+
+        await cubit.load();
+
+        when(() => notificationBridge.status()).thenAnswer((_) async {
+          await cubit.close();
+          return const NotificationStatus(
+            notificationsGranted: true,
+            exactAlarmAllowed: true,
+            enabled: true,
+          );
+        });
+
+        await cubit.refreshPermissionStatus();
+        expect(cubit.isClosed, isTrue);
       },
     );
   });
