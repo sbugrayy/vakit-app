@@ -1,5 +1,8 @@
 plugins {
     id("com.android.application")
+    // AGP 8.12'de Kotlin yerleşik değil; eklenti açıkça uygulanıyor
+    // (bkz. android/settings.gradle.kts'teki sürüm notu).
+    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
