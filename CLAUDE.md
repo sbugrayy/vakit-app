@@ -322,7 +322,16 @@ emülatörde/cihazda çalıştırma. Hiçbiri atlanmaz.
   yazılamıyor; aramada ASCII kullan (`istanbul`), eşleştirme Türkçe
   karakterleri katlıyor.
 - Emülatör imajı Play Store'lu (`adb root` yok); sistem saati değiştirilemez.
-  Vakit geçişi gerçek saatle ya da `dumpsys alarm` ile doğrulanır.
+  Vakit geçişi gerçek saatle ya da `dumpsys alarm` ile doğrulanır. 2026-10-03'te
+  Akşam → Yatsı geçişi canlı izlendi.
+- **Emülatörde ters geokodlama çalışmıyor.** Play Services'in geokodlayıcısı
+  da Norton'a takılıyor ve kullanıcı sertifikalarına güvenmiyor
+  (`GmsGeocoder: reverse geocoding network failure`). "Konumumu bul" bu yüzden
+  emülatörde "listeden seçin" ile biter. Akış gerçek telefonda doğrulanmalı.
+  Konum testi için `adb emu geo fix <boylam> <enlem>`.
+- Emülatörü Buğra da kullanabiliyor (2026-10-03'te konum elle Balıkesir'e
+  çevrilmişti). Dokunma otomasyonundan önce ekranda ne olduğuna bak; birisi
+  kullanıyorsa yalnız `dumpsys` gibi pasif gözlem yap.
 
 ## Bilinen Ortam Sorunları
 

@@ -43,6 +43,24 @@ yürüyor.
 
 ## 4. Fazlar
 
+### Sıradaki adımlar (2026-10-03 akşamı itibarıyla)
+
+1. **Buğra:** `design/STITCH_PROMPTS.md` ile Stitch'te ekranları üretip `design/stitch/` altına koymak (Faz 1). Ekranlar şu an geçici tasarımla çalışıyor.
+2. **Gerçek telefonda deneme:**
+   - `flutter build apk --debug` ile APK'yı kur.
+   - Telefonda Norton olmadığı için `--dart-define` gerekmez.
+   - Özellikle bak: "Konumumu bul" → kıble pusulası, kalıcı bildirim, yeniden başlatma sonrası bildirim.
+3. Geokodlama başarısız olursa koordinatı saklayıp ili elle seçtirme (Faz 2 notu).
+4. Stitch gelince: Ana Sayfa ve Konum Seçimi'ni yeniden giydirme; Aylık Vakitler, Ayarlar ve İzinler ekranları; Kıble saati kartı.
+5. İnternet uygun olunca:
+   - WorkManager günlük yenileme.
+   - AGP 9 / Gradle 9.1 geçişi.
+6. Faz 6:
+   - Uygulama ikonu (şu an Flutter'ın varsayılanı).
+   - Release imzası.
+   - `code-review` ve `security-review`.
+   - PR `flutter-rewrite` → `main`.
+
 ### Faz 0 — Kurulum ve orkestra (Claude) — TAMAM (2026-10-03)
 
 2026-10-02 akşamı Gradle 9.1.0 dağıtımının indirmesi (~225 MB, ~3,4 MB/dk)
@@ -92,7 +110,9 @@ uygun olduğunda ayrı bir iş (Faz 6'da).
 - [x] agy 005: `PrayerSchedule` (sıradaki vakit, geri sayım, gün dönümü, "bugün" verinin ofsetiyle)
 - [x] agy 006: çevrimdışı hesap (`adhan_dart` Türkiye metodu)
 - [x] agy 007a/b: `KeyValueStore`, `SelectedLocation`, önbellekli vakit deposu (Diyanet → önbellek → çevrimdışı)
-- [ ] GPS ile konum: paket indirmeden Android'in kendi `LocationManager` ve `Geocoder`'ıyla native kanal olarak yapılacak (Play Services gerekmez). Planlı görevler 013–014
+- [x] agy 013/014: GPS ile konum, paket indirmeden native kanal `com.sbugrayy.vakit/konum` ile (Android `LocationManager` + `Geocoder`; Play Services gerekmez) + "Konumumu bul" akışı (izin → konum → ters geokod → Diyanet eşleme → koordinatlı kayıt)
+- [ ] **Emülatörde ters geokodlama çalışmıyor**: Norton, Play Services'in geokodlama trafiğini de kesiyor (`GmsGeocoder: reverse geocoding network failure`, "Trust anchor not found"). Uygulama hatayı doğru yakalayıp "listeden seçin" diyor; **gerçek telefonda doğrulanmalı**
+- [ ] İyileştirme önerisi: geokodlama başarısız olursa alınan koordinatı sakla, ili elle seçtir; kıble ve çevrimdışı hesap yine çalışır. Google servisleri olmayan telefonlarda (Huawei) da gerekli
 
 ### Faz 3 — Ekranlar — GEÇİCİ TASARIMLA ÇALIŞIYOR; Stitch bekleniyor
 
@@ -105,7 +125,8 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] agy 010c: Konum Seçimi (elle il → ilçe, Türkçe katlamalı arama, merkez ilçe başta)
 - [ ] Aylık Vakitler (30 gün)
 - [ ] Ayarlar (kalıcı bildirim aç/kapa, tema, konum, veri kaynağı bilgisi)
-- [ ] İzinler. **Öncelikli:** "Alarmlar ve hatırlatıcılar" (exact alarm) izni istenmezse vakit geçişi ~39 dk gecikebilir (emülatörde ölçüldü). `NotificationBridge.openExactAlarmSettings()` hazır
+- [x] agy 017: geçici çözüm olarak Ana Sayfa'da kesin alarm uyarı bandı ve "İzin ver". Uygulama öne gelince durum tazeleniyor
+- [ ] İzinler ekranı (Stitch). "Alarmlar ve hatırlatıcılar" izni istenmezse vakit geçişi ~39 dk gecikebilir (emülatörde ölçüldü); şimdilik 017'deki bant bunu karşılıyor
 - [ ] Stitch tasarımlarıyla yeniden giydirme (Faz 1'e bağlı)
 
 ### Faz 4 — Kalıcı bildirim (native) — TAMAM (WorkManager hariç), 2026-10-03
@@ -124,12 +145,13 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] Claude: emülatörde kanıt (aşağıda "Uçtan uca sonuçlar")
 - [ ] WorkManager günlük yenileme: `work-runtime` önbellekte yok, indirme gerekiyor; ertelendi. Uygulama her açılışta tazeliyor, 30 gün bitince bildirim "uygulamayı açın" diyor
 
-### Faz 5 — Kıble
+### Faz 5 — Kıble — KOD TAMAM, cihazda doğrulama bekliyor (2026-10-03)
 
-- [ ] agy: native heading (`TYPE_ROTATION_VECTOR` + `GeomagneticField` sapması) → EventChannel `com.sbugrayy.vakit/kible`
-- [ ] agy: kıble açısı (saf fonksiyon) + bilinen şehir testleri, Kâbe'ye mesafe
-- [ ] agy: pusula ekranı, doğruluk/kalibrasyon uyarısı, Diyanet "kıble saati" kartı
-- [ ] Claude: emülatör sanal sensörleriyle doğrulama, gerçek cihazda kontrol
+- [x] agy 015b: native yön, EventChannel `com.sbugrayy.vakit/kible`. `TYPE_ROTATION_VECTOR` (yoksa ivmeölçer + manyetometre), `GeomagneticField` sapmasıyla gerçek kuzey, vektörle yumuşatma. JVM testli
+- [x] agy 015a: kıble açısı ve Kâbe'ye mesafe (bağımsız referansla ±0,1°: İstanbul 151,62°), `turnAngle`/`isAligned`, `HeadingSource`
+- [x] agy 016: Kıble ekranı (geçici). Pusula kadranı, açı, hizalama metni, kalibrasyon kartı, mesafe; koordinat yoksa "Konumumu bul"a yönlendirme (emülatörde doğrulandı); Ana Sayfa'da "Kıble" eylemi
+- [ ] Diyanet "kıble saati" kartı
+- [ ] Koordinatlı konumla pusulanın cihazda denenmesi. Emülatörde geokodlama Norton yüzünden çalışmadığı için koordinat alınamadı; gerçek telefonda yapılmalı
 
 ### Faz 6 — Cila ve teslim
 
@@ -150,7 +172,12 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 | Kalıcı bildirim: ongoing, sessiz, "İstanbul • Akşam 18:51" ve geri sayım | ✓ |
 | Özel görünüm açık ve koyu panelde okunur; vurgu temayla değişiyor | ✓ |
 | Alarm Akşam + 1 sn'ye kurulu; exact izin verilip uygulama öne gelince `window=0` | ✓ |
-| Exact izin yokken alarm inexact (~39 dk pencere) | ⚠ İzinler ekranı gerekli |
+| Exact izin yokken alarm inexact (~39 dk pencere) | ⚠ 017'de Ana Sayfa uyarı bandıyla karşılandı |
+| **Canlı vakit geçişi**: 18:56:25'te bildirim, uygulama açılmadan "Balıkesir • Akşam 18:56" → "Balıkesir • Yatsı 20:13"; sonraki alarm 20:13:01, `window=0` | ✓ |
+| Paket güncellemesinde (yeni sürüm kurulumu) alarm yeniden kuruldu | ✓ |
+| Kıble: koordinatsız konumda "Konumumu bul"a yönlendirme | ✓ |
+| "Konumumu bul": konum izni ve konum alındı, ters geokodlama Norton yüzünden düştü, "listeden seçin" gösterildi | ⚠ gerçek telefonda doğrulanmalı |
+| Yeniden başlatma (BOOT_COMPLETED) sonrası bildirim | — yapılmadı; emülatör o sırada kullanılıyor görünüyordu |
 
 Yol üstünde bulunup düzeltilenler:
 
