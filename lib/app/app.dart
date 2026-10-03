@@ -8,6 +8,7 @@ import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/navigation/app_router.dart';
 import 'package:vakit/notifications/repository/notification_bridge.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
+import 'package:vakit/qibla/repository/heading_source.dart';
 import 'package:vakit/shared/clock.dart';
 import 'package:vakit/shared/diyanet/diyanet_api.dart';
 import 'package:vakit/theme/app_theme.dart';
@@ -20,6 +21,7 @@ class App extends StatelessWidget {
     required this.notificationBridge,
     required this.clock,
     required this.deviceLocation,
+    required this.headingSource,
     this.routerConfig,
     super.key,
   });
@@ -30,6 +32,7 @@ class App extends StatelessWidget {
   final NotificationBridge notificationBridge;
   final Clock clock;
   final DeviceLocation deviceLocation;
+  final HeadingSource headingSource;
   final RouterConfig<Object>? routerConfig;
 
   @override
@@ -46,6 +49,7 @@ class App extends StatelessWidget {
         ),
         RepositoryProvider<Clock>.value(value: clock),
         RepositoryProvider<DeviceLocation>.value(value: deviceLocation),
+        RepositoryProvider<HeadingSource>.value(value: headingSource),
       ],
       child: MaterialApp.router(
         title: 'Vakit',

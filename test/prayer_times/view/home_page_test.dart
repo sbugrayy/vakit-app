@@ -268,6 +268,8 @@ void main() {
 
           expect(tester.takeException(), isNull);
 
+          expect(find.byTooltip('Kıble'), findsOneWidget);
+
           await tester.tap(find.byTooltip('Yenile'));
           await tester.pump();
           verify(() => mockCubit.load(forceRefresh: true)).called(1);
@@ -277,6 +279,54 @@ void main() {
           expect(locationActionCalled, isTrue);
           expect(tester.takeException(), isNull);
         }
+      },
+    );
+
+    testWidgets(
+      'Loaded: Kıble eylemine tıklandığında /kible rotasına gider',
+      (tester) async {
+        configure360dp(tester);
+
+        final status = PrayerSchedule(days).statusAt(clock.now());
+        final loadedState = PrayerTimesLoaded(
+          location: istanbul,
+          result: PrayerTimesResult(
+            days: days,
+            source: PrayerDataSource.diyanet,
+          ),
+          status: status,
+        );
+        when(() => mockCubit.state).thenReturn(loadedState);
+
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => BlocProvider<PrayerTimesCubit>.value(
+                value: mockCubit,
+                child: const HomeView(),
+              ),
+            ),
+            GoRoute(
+              path: '/kible',
+              builder: (context, state) => const Scaffold(
+                body: Text('Kıble Sayfası'),
+              ),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pump();
+
+        expect(find.byTooltip('Kıble'), findsOneWidget);
+        await tester.tap(find.byTooltip('Kıble'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(find.text('Kıble Sayfası'), findsOneWidget);
+        expect(tester.takeException(), isNull);
       },
     );
 

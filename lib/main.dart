@@ -7,6 +7,7 @@ import 'package:vakit/location/repository/device_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/notifications/repository/notification_bridge.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
+import 'package:vakit/qibla/repository/heading_source.dart';
 import 'package:vakit/shared/clock.dart';
 import 'package:vakit/shared/diyanet/diyanet_api.dart';
 import 'package:vakit/shared/storage/shared_preferences_store.dart';
@@ -26,6 +27,7 @@ Future<void> main() async {
   );
   final notificationBridge = NotificationBridge();
   final deviceLocation = DeviceLocation();
+  final headingSource = HeadingSource();
 
   runApp(
     App(
@@ -35,6 +37,7 @@ Future<void> main() async {
       notificationBridge: notificationBridge,
       clock: clock,
       deviceLocation: deviceLocation,
+      headingSource: headingSource,
     ),
   );
 }

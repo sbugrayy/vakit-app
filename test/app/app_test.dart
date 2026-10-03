@@ -13,6 +13,7 @@ import 'package:vakit/navigation/app_router.dart';
 import 'package:vakit/notifications/repository/notification_bridge.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
 import 'package:vakit/prayer_times/view/home_page.dart';
+import 'package:vakit/qibla/repository/heading_source.dart';
 import 'package:vakit/shared/clock.dart';
 import 'package:vakit/shared/diyanet/diyanet_api.dart';
 
@@ -29,6 +30,8 @@ class _MockClock extends Mock implements Clock {}
 
 class _MockDeviceLocation extends Mock implements DeviceLocation {}
 
+class _MockHeadingSource extends Mock implements HeadingSource {}
+
 void main() {
   late _MockLocationStore locationStore;
   late _MockPrayerTimesRepository prayerTimesRepository;
@@ -36,6 +39,7 @@ void main() {
   late _MockNotificationBridge notificationBridge;
   late _MockClock clock;
   late _MockDeviceLocation deviceLocation;
+  late _MockHeadingSource headingSource;
 
   setUpAll(() async {
     await initializeDateFormatting('tr');
@@ -48,6 +52,7 @@ void main() {
     notificationBridge = _MockNotificationBridge();
     clock = _MockClock();
     deviceLocation = _MockDeviceLocation();
+    headingSource = _MockHeadingSource();
 
     when(() => locationStore.load()).thenAnswer((_) async => null);
     when(
@@ -63,6 +68,7 @@ void main() {
       notificationBridge: notificationBridge,
       clock: clock,
       deviceLocation: deviceLocation,
+      headingSource: headingSource,
       routerConfig: routerConfig,
     );
   }
@@ -102,6 +108,7 @@ void main() {
         );
         expect(element.read<Clock>(), equals(clock));
         expect(element.read<DeviceLocation>(), equals(deviceLocation));
+        expect(element.read<HeadingSource>(), equals(headingSource));
       },
     );
 
@@ -144,10 +151,11 @@ void main() {
 
     test('createAppRouter kök rotasını ve başlangıç konumunu ayarlar', () {
       final router = createAppRouter();
-      expect(router.configuration.routes.length, equals(2));
+      expect(router.configuration.routes.length, equals(3));
       final routes = router.configuration.routes.cast<GoRoute>().toList();
       expect(routes[0].path, equals('/'));
       expect(routes[1].path, equals('/konum'));
+      expect(routes[2].path, equals('/kible'));
       expect(
         router.routeInformationProvider.value.uri.path,
         equals('/'),

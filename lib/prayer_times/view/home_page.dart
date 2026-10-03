@@ -261,6 +261,11 @@ class _LoadedView extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.explore),
+            tooltip: 'Kıble',
+            onPressed: () => unawaited(context.push('/kible')),
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Yenile',
             onPressed: () => context.read<PrayerTimesCubit>().load(
