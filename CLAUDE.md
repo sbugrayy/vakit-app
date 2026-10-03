@@ -129,8 +129,18 @@ onayıyla kaldırıldı, önceki hali `settings.json.bak`'ta):
 "read_file(C:\\Users\\bugra\\Documents\\GitHub\\vakit-app)",
 "write_file(C:\\Users\\bugra\\Documents\\GitHub\\vakit-app\\lib)",
 "write_file(C:\\Users\\bugra\\Documents\\GitHub\\vakit-app\\test)",
-"write_file(C:\\Users\\bugra\\Documents\\GitHub\\vakit-app\\android\\app\\src)"
+"write_file(C:\\Users\\bugra\\Documents\\GitHub\\vakit-app\\android\\app\\src)",
+"read_file(C:\\Users\\bugra\\AppData\\Local\\Pub\\Cache)",
+"read_file(C:\\Users\\bugra\\dev\\flutter)"
 ```
+
+Son iki satır 2026-10-03'te eklendi, yalnız okuma izni veriyorlar. agy paket
+kaynağını okuyamayınca görevi durdurmuştu; artık paket ve Flutter API'sini
+yerel kaynaktan doğrulayabiliyor.
+
+**agy'nin internet erişimi yok.** `read_url` izni verilmedi; web'e bakmaya
+çalışırsa koşu reddedilip boş biter. Brif gereken bilgiyi içermeli ya da
+yerel kaynağı göstermeli (pub önbelleği, `test/fixtures/`).
 
 `trustedWorkspaces` içinde de vakit-app var. Etkileşimli `agy` girişte aynı
 klasörü bir kez daha `...\Github\vakit-app` yazımıyla ekledi; Windows'ta zararsız.
@@ -279,6 +289,40 @@ emülatörde/cihazda çalıştırma. Hiçbiri atlanmaz.
 - Vakitler `curl https://ezanvakti.emushaf.net/vakitler/<IlceID>` çıktısıyla
   birebir karşılaştırılır.
 - Bildirim hem açık hem koyu bildirim panelinde okunur olmalı.
+
+## Emülatörde Uçtan Uca Test (2026-10-03'te kuruldu)
+
+- **Emülatörü bağımsız başlat.** Bash arka plan görevleri ~30 dk'da
+  öldürülüyor ve emülatörü de kapatıyor. PowerShell'den başlat:
+  ```powershell
+  Start-Process "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe" -ArgumentList '-avd','Pixel_8','-no-boot-anim','-dns-server','8.8.8.8,1.1.1.1'
+  ```
+  `-dns-server` şart: emülatörün yerleşik DNS vekili (10.0.2.3) bu makinede
+  isim çözmüyor.
+- **Norton ve HTTPS.** Norton, emülatör trafiğini de kendi köküyle yeniden
+  imzalıyor ("Norton Web/Mail Shield Root"). İki önlem alındı:
+  - Kök sertifika emülatörün kullanıcı deposuna yüklendi (Ayarlar →
+    Encryption & credentials → Install a certificate → CA certificate).
+  - `dart:io` kullanıcı sertifikalarını okumadığı için uygulama debug'da
+    ek kökü derleme anında alıyor:
+    ```bash
+    flutter run -d emulator-5554 --dart-define=DEV_EXTRA_CA_PEM_B64=$(cat .agy/norton_root.pem.b64)
+    ```
+  `.agy/norton_root.*` git dışında ve makineye özel. Yeniden üretmek için
+  sertifikayı Windows'un `Cert:\LocalMachine\Root` deposundan dışa aktar ve
+  PEM'in base64'ünü al. Release derlemesinde bunların hiçbiri etkili değil.
+- **Kesin alarm izni.** Android 14+'da "Alarmlar ve hatırlatıcılar" izni
+  varsayılan kapalı; o zaman alarm inexact kalır (ölçülen pencere ~39 dk).
+  Testte izni ver:
+  `adb shell appops set com.sbugrayy.vakit SCHEDULE_EXACT_ALARM allow`
+  Uygulama öne gelince (`onResume`) alarm kesinleşir: `dumpsys alarm`'da
+  `window=0`. Kullanıcıya bu izni istettiren ekran henüz yok (Faz 3).
+- **Arayüzü sürmek:** `python tool/adb_ui.py dump`, `tap "metin"`,
+  `tap "=birebir"`, `has "metin"`. Türkçe karakter `adb shell input text` ile
+  yazılamıyor; aramada ASCII kullan (`istanbul`), eşleştirme Türkçe
+  karakterleri katlıyor.
+- Emülatör imajı Play Store'lu (`adb root` yok); sistem saati değiştirilemez.
+  Vakit geçişi gerçek saatle ya da `dumpsys alarm` ile doğrulanır.
 
 ## Bilinen Ortam Sorunları
 

@@ -82,36 +82,47 @@ uygun olduğunda ayrı bir iş (Faz 6'da).
 - [ ] Claude inceler: tutarlılık, açık/koyu, erişilebilir kontrast
 - [ ] agy: `lib/theme/` (app_colors, app_spacing, app_typography, app_theme; açık + koyu)
 
-### Faz 2 — Veri katmanı
+### Faz 2 — Veri katmanı — TAMAM (GPS hariç), 2026-10-03
 
-- [ ] Claude: `curl` ile gerçek yanıtlar → `test/fixtures/` (`sehirler_2.json`, `ilceler_539.json`, `vakitler_<id>.json`)
-- [ ] Claude: `shared_preferences` + `adhan` paketleri (pub.dev'de Türkiye metodu ve bakım durumu doğrulanır)
-- [ ] agy: modeller (`PrayerDay`: 6 vakit UTC, Miladi/Hicri, kıble saati)
-- [ ] agy: Diyanet API istemcisi (dio)
-- [ ] agy: önbellek (30 gün; 10 günden az kalınca yenile)
-- [ ] agy: çevrimdışı hesap (Diyanet'ten sapma ≤ 2 dk testi)
-- [ ] agy: sıradaki vakit ve gün dönümü hesabı
-- [ ] Claude: `geolocator` + `geocoding` paketleri
-- [ ] agy: konum → il/ilçe eşleme (Türkçe karakter katlama), elle seçim için il/ilçe listeleri
+- [x] Claude: gerçek yanıtlar → `test/fixtures/diyanet/` (81 il; İstanbul/Ankara/Van ilçeleri ve 32 günlük vakitleri)
+- [x] Claude: `shared_preferences` ve `adhan_dart`. `adhan` yerine `adhan_dart` seçildi: 2026 sürümü, 160/160 puan. `adhan` 2023'ten beri bakımsız. Türkiye metodu Diyanet'ten en fazla 2 dk sapıyor (ölçüldü)
+- [x] agy 002: `Prayer`, `PrayerDay` (mutlak UTC, Hicri, kıble saati), Diyanet JSON çözümleme
+- [x] agy 003: Diyanet API istemcisi (dio, tam switch'li hata eşlemesi), `City`/`District`
+- [x] agy 004: Türkçe katlama ve il/ilçe eşleştirme (ASCII/Türkçe karışık adlar, `(V)` ekleri, listede olmayan merkez ilçe → il merkezi)
+- [x] agy 005: `PrayerSchedule` (sıradaki vakit, geri sayım, gün dönümü, "bugün" verinin ofsetiyle)
+- [x] agy 006: çevrimdışı hesap (`adhan_dart` Türkiye metodu)
+- [x] agy 007a/b: `KeyValueStore`, `SelectedLocation`, önbellekli vakit deposu (Diyanet → önbellek → çevrimdışı)
+- [ ] GPS ile konum: paket indirmeden Android'in kendi `LocationManager` ve `Geocoder`'ıyla native kanal olarak yapılacak (Play Services gerekmez). Planlı görevler 013–014
 
-### Faz 3 — Ekranlar (`stitch-to-flutter`)
+### Faz 3 — Ekranlar — GEÇİCİ TASARIMLA ÇALIŞIYOR; Stitch bekleniyor
 
-- [ ] Uygulama kabuğu, go_router, alt gezinme, `main()` başlatma sırası
-- [ ] Ana Sayfa: sıradaki vakit, canlı geri sayım, bugünün 6 vakti, Miladi + Hicri tarih, çevrimdışı/bayat veri rozeti
+Stitch tasarımları gelmediği için ekranlar geçici temayla (`lib/theme/` yer
+tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
+`stitch-to-flutter` ile yalnız görünüm ve token'lar değişecek.
+
+- [x] agy 010a: uygulama kabuğu, go_router, Türkçe yerel, `main()` başlatma sırası, saat biçimleme (cihaz saat diliminden bağımsız)
+- [x] agy 010b: Ana Sayfa + `PrayerTimesCubit`. Sıradaki vakit, canlı geri sayım, ilerleme, Miladi + Hicri tarih, 6 vakit, rozetler; ilk açılışta bildirim izni
+- [x] agy 010c: Konum Seçimi (elle il → ilçe, Türkçe katlamalı arama, merkez ilçe başta)
 - [ ] Aylık Vakitler (30 gün)
-- [ ] Konum Seçimi (GPS + elle il/ilçe)
 - [ ] Ayarlar (kalıcı bildirim aç/kapa, tema, konum, veri kaynağı bilgisi)
-- [ ] İzinler (konum, bildirim, exact alarm; pil optimizasyonu için bilgi kartı)
+- [ ] İzinler. **Öncelikli:** "Alarmlar ve hatırlatıcılar" (exact alarm) izni istenmezse vakit geçişi ~39 dk gecikebilir (emülatörde ölçüldü). `NotificationBridge.openExactAlarmSettings()` hazır
+- [ ] Stitch tasarımlarıyla yeniden giydirme (Faz 1'e bağlı)
 
-### Faz 4 — Kalıcı bildirim (native)
+### Faz 4 — Kalıcı bildirim (native) — TAMAM (WorkManager hariç), 2026-10-03
 
-- [ ] Claude: `permission_handler`, Gradle'a WorkManager
-- [ ] agy: MethodChannel köprüsü (`com.sbugrayy.vakit/bildirim`): `syncSchedule`, `setEnabled`, izin durumu
-- [ ] agy: native store + alarm zamanlayıcı (yalnız vakit sınırları; exact yoksa inexact)
-- [ ] agy: kalıcı bildirim. `DecoratedCustomViewStyle` + tema uyumlu RemoteViews + countdown `Chronometer`; kapalı: ilçe • sıradaki vakit • geri sayım; açık: 6 vakit
-- [ ] agy: receiver'lar (boot, saat, saat dilimi, paket güncellemesi), kaydırılıp kapatılınca sonraki vakitte geri gelme
-- [ ] agy: WorkManager günlük yenileme
-- [ ] Claude: adb kanıtı (`dumpsys notification`, `dumpsys alarm`), vakit geçişi, yeniden başlatma, açık/koyu panel
+- [x] agy 008a: Kotlin motoru
+  - Yük deposu.
+  - Sıradaki vakit hesabı; yükün ofsetiyle biçimleme.
+  - Yalnız sıradaki vakte tek exact alarm; izin yoksa inexact.
+  - Receiver'lar: boot, saat, saat dilimi, paket güncellemesi, exact izin değişimi.
+  - JVM testleri.
+- [x] agy 008c: MethodChannel `com.sbugrayy.vakit/bildirim` + Android 13+ bildirim izni + `onResume` tazelemesi
+- [x] agy 009: Dart köprüsü `NotificationBridge`
+- [x] agy 008b: özel görünüm. `DecoratedCustomViewStyle` + RemoteViews; geri sayan Chronometer ve 6 vakit; vurgu yalnız XML'de (values/values-night). Uygulama adı "Vakit"
+- [x] agy 011: ana manifestte INTERNET (release'te eksikti); debug'da kullanıcı sertifikalarına güven
+- [x] agy 012: yalnız debug'da, `--dart-define` ile verilirse ek kök sertifika (Norton/emülatör)
+- [x] Claude: emülatörde kanıt (aşağıda "Uçtan uca sonuçlar")
+- [ ] WorkManager günlük yenileme: `work-runtime` önbellekte yok, indirme gerekiyor; ertelendi. Uygulama her açılışta tazeliyor, 30 gün bitince bildirim "uygulamayı açın" diyor
 
 ### Faz 5 — Kıble
 
@@ -127,6 +138,25 @@ uygun olduğunda ayrı bir iş (Faz 6'da).
 - [ ] README, `code-review` ve `security-review`
 - [ ] Gerçek telefonda uçtan uca deneme
 - [ ] PR: `flutter-rewrite` → `main`
+
+## 5a. Uçtan uca sonuçlar (2026-10-03, Pixel_8 emülatörü, Android 37)
+
+| Adım | Sonuç |
+|---|---|
+| Temiz kurulum → bildirim izni iletişim kutusu → izin | ✓ |
+| Konum seç → 81 il (Türkçe adlarla) → `istanbul` araması → İstanbul (merkez) | ✓ |
+| Ana Sayfa: bugünün vakitleri Diyanet'le birebir (05:31 06:55 12:58 16:14 18:51 20:10, 22 Rebiulahir 1448) | ✓ |
+| Emülatör UTC'deyken saatler Türkiye saatiyle | ✓ |
+| Kalıcı bildirim: ongoing, sessiz, "İstanbul • Akşam 18:51" ve geri sayım | ✓ |
+| Özel görünüm açık ve koyu panelde okunur; vurgu temayla değişiyor | ✓ |
+| Alarm Akşam + 1 sn'ye kurulu; exact izin verilip uygulama öne gelince `window=0` | ✓ |
+| Exact izin yokken alarm inexact (~39 dk pencere) | ⚠ İzinler ekranı gerekli |
+
+Yol üstünde bulunup düzeltilenler:
+
+- Release'te INTERNET izni yoktu.
+- Emülatör DNS'i bozuktu (`-dns-server`).
+- Norton TLS taraması emülatörü engelliyordu (debug'a özel çözüm).
 
 ## 5. Uçtan uca doğrulama senaryosu
 
