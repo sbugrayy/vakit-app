@@ -8,6 +8,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.SystemClock
+import android.view.View
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -17,6 +20,39 @@ object PersistentNotification {
     const val NOTIFICATION_ID = 1001
     const val CHANNEL_ID = "vakit_kalici"
     private const val CONTENT_REQUEST_CODE = 1003
+
+    private val NAME_IDS = intArrayOf(
+        R.id.name_0,
+        R.id.name_1,
+        R.id.name_2,
+        R.id.name_3,
+        R.id.name_4,
+        R.id.name_5
+    )
+    private val NAME_HL_IDS = intArrayOf(
+        R.id.name_hl_0,
+        R.id.name_hl_1,
+        R.id.name_hl_2,
+        R.id.name_hl_3,
+        R.id.name_hl_4,
+        R.id.name_hl_5
+    )
+    private val TIME_IDS = intArrayOf(
+        R.id.time_0,
+        R.id.time_1,
+        R.id.time_2,
+        R.id.time_3,
+        R.id.time_4,
+        R.id.time_5
+    )
+    private val TIME_HL_IDS = intArrayOf(
+        R.id.time_hl_0,
+        R.id.time_hl_1,
+        R.id.time_hl_2,
+        R.id.time_hl_3,
+        R.id.time_hl_4,
+        R.id.time_hl_5
+    )
 
     fun show(context: Context, state: NotificationState) {
         if (!hasNotificationPermission(context)) {
@@ -43,17 +79,68 @@ object PersistentNotification {
             }
         }.joinToString(" · ")
 
+        val base = SystemClock.elapsedRealtime() +
+            (state.next.epochMillis - System.currentTimeMillis())
+
+        val collapsedView = RemoteViews(
+            context.packageName,
+            R.layout.notification_vakit_collapsed
+        ).apply {
+            setTextViewText(R.id.title, title)
+            setChronometer(R.id.countdown, base, null, true)
+            setChronometerCountDown(R.id.countdown, true)
+        }
+
+        val expandedView = RemoteViews(
+            context.packageName,
+            R.layout.notification_vakit_expanded
+        ).apply {
+            setTextViewText(R.id.title_expanded, title)
+            setChronometer(R.id.countdown_expanded, base, null, true)
+            setChronometerCountDown(R.id.countdown_expanded, true)
+
+            for (i in 0 until minOf(state.day.times.size, 6)) {
+                val moment = state.day.times[i]
+                val time = NextPrayerCalculator.formatTime(
+                    moment.epochMillis,
+                    state.utcOffsetMinutes
+                )
+                val isNext = i == state.nextIndex
+
+                setTextViewText(NAME_IDS[i], moment.label)
+                setTextViewText(NAME_HL_IDS[i], moment.label)
+                setTextViewText(TIME_IDS[i], time)
+                setTextViewText(TIME_HL_IDS[i], time)
+
+                setViewVisibility(
+                    NAME_IDS[i],
+                    if (isNext) View.GONE else View.VISIBLE
+                )
+                setViewVisibility(
+                    NAME_HL_IDS[i],
+                    if (isNext) View.VISIBLE else View.GONE
+                )
+                setViewVisibility(
+                    TIME_IDS[i],
+                    if (isNext) View.GONE else View.VISIBLE
+                )
+                setViewVisibility(
+                    TIME_HL_IDS[i],
+                    if (isNext) View.VISIBLE else View.GONE
+                )
+            }
+        }
+
         val contentIntent = createContentPendingIntent(context)
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_vakit)
             .setContentTitle(title)
             .setContentText(summaryLine)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(summaryLine))
-            .setWhen(state.next.epochMillis)
-            .setUsesChronometer(true)
-            .setChronometerCountDown(true)
-            .setShowWhen(true)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(collapsedView)
+            .setCustomBigContentView(expandedView)
+            .setShowWhen(false)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)
