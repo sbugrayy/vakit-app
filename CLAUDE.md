@@ -294,9 +294,14 @@ emülatörde/cihazda çalıştırma. Hiçbiri atlanmaz.
     wrapper'ı (java) arkada çalışmaya devam ediyor. Durdurmak için süreci
     `taskkill` ile kapat.
   - Wrapper yarım indirmeyi sürdürmez.
-  - Önbellekte hazır dağıtımlar: `gradle-9.0.0-all`, `gradle-9.5.0-bin`. AGP
-    9.0.1 en az Gradle 9.1 istiyor.
+  - Android araç zinciri bu yüzden **önbellekteki sürümlere sabit**: AGP
+    8.12.0, Kotlin 2.2.20, Gradle 9.0.0 (gerekçesi
+    `android/settings.gradle.kts`'te). İndirmesiz derleme ~3 dk. Sürüm
+    değiştirmek büyük indirme demek.
   - Yüzlerce MB'lık bir indirme başlatmadan önce Buğra'ya sor.
+- **Emülatör saat dilimi UTC.** Uygulama vakitleri cihaz saat diliminden
+  bağımsız hesaplamalı; ekranda gösterilen saatler yine Türkiye saatiyle
+  (verinin ofsetiyle) yazılmalı.
 - **intl 0.20.2 sabit**: Flutter 3.44.6'nın `flutter_localizations`'ı bunu
   istiyor; yükseltme `pub get`'i kırar (gerekçesi `pubspec.yaml`'da).
 - **Satır sonları**: makinede `core.autocrlf=true`; `.gitattributes` her şeyi
