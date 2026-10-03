@@ -18,7 +18,8 @@ import com.sbugrayy.vakit.R
 
 object PersistentNotification {
     const val NOTIFICATION_ID = 1001
-    const val CHANNEL_ID = "vakit_kalici"
+    const val CHANNEL_ID = "vakit_geri_sayim"
+    private const val LEGACY_CHANNEL_ID = "vakit_kalici"
     private const val CONTENT_REQUEST_CODE = 1003
 
     private val NAME_IDS = intArrayOf(
@@ -230,20 +231,36 @@ object PersistentNotification {
                 Context.NOTIFICATION_SERVICE
             ) as? NotificationManager ?: return
 
-            if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
-                val name = context.getString(R.string.notification_channel_name)
+            // Düşük önem (IMPORTANCE_LOW) "sessiz" sayılır ve sessiz bildirimin
+            // simgesi durum çubuğunda gizlenebilir (hideSilentStatusBar=true).
+            // Kanal önemi sonradan kodla yükseltilemediği için yeni kimliğe
+            // geçildi. Eski kanal kullanıcı ayarlarında kalmasın diye silinir.
+            val legacyChannel = notificationManager
+                .getNotificationChannel(LEGACY_CHANNEL_ID)
+            if (legacyChannel != null) {
+                notificationManager
+                    .deleteNotificationChannel(LEGACY_CHANNEL_ID)
+            }
+
+            val currentChannel = notificationManager
+                .getNotificationChannel(CHANNEL_ID)
+            if (currentChannel == null) {
+                val name = context.getString(
+                    R.string.notification_channel_name
+                )
                 val descriptionText = context.getString(
                     R.string.notification_channel_description
                 )
                 val channel = NotificationChannel(
                     CHANNEL_ID,
                     name,
-                    NotificationManager.IMPORTANCE_LOW
+                    NotificationManager.IMPORTANCE_DEFAULT
                 ).apply {
                     description = descriptionText
                     setShowBadge(false)
                     setSound(null, null)
                     enableVibration(false)
+                    enableLights(false)
                 }
                 notificationManager.createNotificationChannel(channel)
             }
