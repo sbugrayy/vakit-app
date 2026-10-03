@@ -79,8 +79,11 @@ Hiçbiri raporda geçmiyordu. Kontrol edilecekler:
 
 - `Timer.periodic`, `StreamSubscription`, sensör dinleyicisi `close()`/`dispose`
   içinde iptal edilmeli.
-- Kotlin'de `while(true)`, global `CoroutineScope`, dakikalık alarm zinciri
-  olmamalı. Geri sayım `Chronometer` ile yapılır.
+- Kotlin'de `while(true)` ve global `CoroutineScope` olmamalı. Geri sayım
+  `Chronometer` ile yapılır.
+- Dakikalık güncelleme yalnız vakte son 60 dakikada yapılır, cihazı uyandırmayan
+  tek seferlik "görünüm tiki" alarmıyla (bkz. AGENTS.md). Tik zamanı her zaman
+  şimdiden sonra olmalı; aynı ana tekrar kurulan tik sonsuz döngü demek.
 - Saniyelik geri sayım widget'ı yalnız kendini yeniden çizmeli, bütün sayfayı
   değil. `BlocBuilder` için `buildWhen` ya da ayrı küçük widget kullanılır.
 

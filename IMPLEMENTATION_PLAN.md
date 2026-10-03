@@ -22,6 +22,7 @@ yürüyor.
 |---|---|---|
 | Platform | Flutter, yalnız Android. `com.sbugrayy.vakit`, minSdk 26 | 2026-10-02 |
 | Bildirim | Tek özellik: canlı geri sayımlı kalıcı bildirim. Sesli uyarı, durum çubuğu dakika ikonu, aksiyon butonu yok | 2026-10-02 |
+| Bildirim (ek) | Buğra'nın isteğiyle eklendi (örnek Ezan Vakti Pro): "N saat kaldı" özeti ve vakte 60 dk kala durum çubuğunda dakika sayan cami simgesi, diğer zamanlarda hilal-yıldız. Yalnız kesin alarm izni varken; inexact alarm sayıyı ≥10 dk geciktirebilir | 2026-10-03 |
 | Tasarım | Google Stitch → `design/stitch/` | 2026-10-02 |
 | Vakit kaynağı | Diyanet verisi (`ezanvakti.emushaf.net`) + çevrimdışı yedek (`adhan`, Türkiye metodu) | 2026-10-02 |
 | agy | `gemini-3.8-flash-high`. Global izin dosyasında `command(...)` izinleri kaldırıldı, vakit-app'e yalnız `lib/`, `test/`, `android/app/src/` yazma izni | 2026-10-02 |
@@ -34,7 +35,7 @@ yürüyor.
 | Eski hata | Yeni kural |
 |---|---|
 | Sabit renkler (hero kart, bildirimde `#FFFFFF`) | Token zorunluluğu (`lib/theme/`), her ekran açık + koyu test |
-| `while(true)` coroutine + dakikalık alarm | Sistem `Chronometer`'ı + yalnız vakit sınırında exact alarm |
+| `while(true)` coroutine + gün boyu dakikalık alarm | Sistem `Chronometer`'ı + vakit sınırında exact alarm. Dakikalık tik yalnız son 60 dakikada, cihazı uyandırmadan |
 | Yalnız bugünün vakitleri, `cached_date` hiç kontrol edilmiyor | 30 günlük önbellek, tarih ve UTC ofset kontrolü |
 | Yatsı sonrası "yarının İmsak'ı" bugünkü saatle tahmin | Ertesi günün kendi verisi |
 | İmsak için Aladhan `Imsak` (Fajr−10 dk) | Diyanet verisi doğrudan |
@@ -46,10 +47,7 @@ yürüyor.
 ### Sıradaki adımlar (2026-10-03 akşamı itibarıyla)
 
 1. **Buğra:** `design/STITCH_PROMPTS.md` ile Stitch'te ekranları üretip `design/stitch/` altına koymak (Faz 1). Ekranlar şu an geçici tasarımla çalışıyor.
-2. **Gerçek telefonda deneme:**
-   - `flutter build apk --debug` ile APK'yı kur.
-   - Telefonda Norton olmadığı için `--dart-define` gerekmez.
-   - Özellikle bak: "Konumumu bul" → kıble pusulası, kalıcı bildirim, yeniden başlatma sonrası bildirim.
+2. **Gerçek telefonda deneme** — 2026-10-03 akşamı Buğra denedi: konum bulunuyor, kıble gösteriliyor, bildirimde canlı sayaç çalışıyor. İstediği eklemeler 018a/018b'de (özet satırı, durum çubuğu simgeleri). Telefonda kalan: yeniden başlatma sonrası bildirim ve yeni simgeler.
 3. Geokodlama başarısız olursa koordinatı saklayıp ili elle seçtirme (Faz 2 notu).
 4. Stitch gelince: Ana Sayfa ve Konum Seçimi'ni yeniden giydirme; Aylık Vakitler, Ayarlar ve İzinler ekranları; Kıble saati kartı.
 5. İnternet uygun olunca:
@@ -111,7 +109,7 @@ uygun olduğunda ayrı bir iş (Faz 6'da).
 - [x] agy 006: çevrimdışı hesap (`adhan_dart` Türkiye metodu)
 - [x] agy 007a/b: `KeyValueStore`, `SelectedLocation`, önbellekli vakit deposu (Diyanet → önbellek → çevrimdışı)
 - [x] agy 013/014: GPS ile konum, paket indirmeden native kanal `com.sbugrayy.vakit/konum` ile (Android `LocationManager` + `Geocoder`; Play Services gerekmez) + "Konumumu bul" akışı (izin → konum → ters geokod → Diyanet eşleme → koordinatlı kayıt)
-- [ ] **Emülatörde ters geokodlama çalışmıyor**: Norton, Play Services'in geokodlama trafiğini de kesiyor (`GmsGeocoder: reverse geocoding network failure`, "Trust anchor not found"). Uygulama hatayı doğru yakalayıp "listeden seçin" diyor; **gerçek telefonda doğrulanmalı**
+- [x] **Emülatörde ters geokodlama çalışmıyor**: Norton, Play Services'in geokodlama trafiğini de kesiyor (`GmsGeocoder: reverse geocoding network failure`, "Trust anchor not found"). Uygulama hatayı doğru yakalayıp "listeden seçin" diyor. Gerçek telefonda çalışıyor (Buğra, 2026-10-03)
 - [ ] İyileştirme önerisi: geokodlama başarısız olursa alınan koordinatı sakla, ili elle seçtir; kıble ve çevrimdışı hesap yine çalışır. Google servisleri olmayan telefonlarda (Huawei) da gerekli
 
 ### Faz 3 — Ekranlar — GEÇİCİ TASARIMLA ÇALIŞIYOR; Stitch bekleniyor
@@ -143,6 +141,8 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] agy 011: ana manifestte INTERNET (release'te eksikti); debug'da kullanıcı sertifikalarına güven
 - [x] agy 012: yalnız debug'da, `--dart-define` ile verilirse ek kök sertifika (Norton/emülatör)
 - [x] Claude: emülatörde kanıt (aşağıda "Uçtan uca sonuçlar")
+- [ ] agy 018a: kalan süre özeti ("9 saat kaldı" / "12 dakika kaldı") + görünüm tiki alarmı (`RTC`, yalnız kesin alarm izniyle)
+- [ ] agy 018b: durum çubuğu simgeleri. Hilal-yıldız; son 60 dakikada cami silüetinde kalan dakika (çalışma anında bitmap)
 - [ ] WorkManager günlük yenileme: `work-runtime` önbellekte yok, indirme gerekiyor; ertelendi. Uygulama her açılışta tazeliyor, 30 gün bitince bildirim "uygulamayı açın" diyor
 
 ### Faz 5 — Kıble — KOD TAMAM, cihazda doğrulama bekliyor (2026-10-03)
@@ -151,7 +151,7 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] agy 015a: kıble açısı ve Kâbe'ye mesafe (bağımsız referansla ±0,1°: İstanbul 151,62°), `turnAngle`/`isAligned`, `HeadingSource`
 - [x] agy 016: Kıble ekranı (geçici). Pusula kadranı, açı, hizalama metni, kalibrasyon kartı, mesafe; koordinat yoksa "Konumumu bul"a yönlendirme (emülatörde doğrulandı); Ana Sayfa'da "Kıble" eylemi
 - [ ] Diyanet "kıble saati" kartı
-- [ ] Koordinatlı konumla pusulanın cihazda denenmesi. Emülatörde geokodlama Norton yüzünden çalışmadığı için koordinat alınamadı; gerçek telefonda yapılmalı
+- [x] Koordinatlı konumla pusulanın cihazda denenmesi: gerçek telefonda kıble gösteriliyor (Buğra, 2026-10-03)
 
 ### Faz 6 — Cila ve teslim
 

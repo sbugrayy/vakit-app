@@ -20,8 +20,10 @@ sıradaki adım. Projenin durumu için tek kaynak orası.
 - Diyanet ile birebir vakitler (ilçe bazlı), 30 günlük önbellek, internet ya da
   servis yoksa cihazda yedek hesap.
 - **Canlı geri sayımlı kalıcı bildirim** (native Kotlin motoru, Flutter
-  kapalıyken de çalışır). Kullanıcının istediği tek bildirim özelliği bu:
-  sesli ezan uyarısı, durum çubuğunda dakika ikonu, bildirim butonları yok.
+  kapalıyken de çalışır). İçinde geri sayım ve "9 saat kaldı" gibi kısa bir
+  özet var. Vakte 60 dakika kala durum çubuğu simgesi kalan dakikayı sayar
+  (2026-10-03'te Buğra istedi, örnek Ezan Vakti Pro). Sesli ezan uyarısı ve
+  bildirim butonları yok.
 - Kıble pusulası (gerçek kuzeye göre).
 - Tasarım Google Stitch'ten gelir (`design/stitch/`).
 
@@ -240,13 +242,28 @@ mobil uygulamaya gömülecek bir sır gerektirdiği için kullanılmıyor.
 - Flutter vakitleri (epoch) MethodChannel ile native tarafa verir. Native taraf
   Dart'a ihtiyaç duymadan çalışır.
 - Görünüm `DecoratedCustomViewStyle` ile tema uyumlu RemoteViews:
-  - Kapalıyken: ilçe, sıradaki vakit ve geri sayım.
-  - Açıkken: 6 vakit, sıradaki vurgulu.
+  - Kapalıyken: ilçe, sıradaki vakit, geri sayım ve kalan süre özeti
+    ("9 saat kaldı"; son saatte "12 dakika kaldı").
+  - Açıkken: aynı satırlar, altında 6 vakit, sıradaki vurgulu.
+- Durum çubuğu simgesi:
+  - Vakte 60 dakikadan fazla varken hilal-yıldız (`ic_stat_vakit`).
+  - Son 60 dakikada cami silüeti, içinde kalan dakika. Simge çalışma anında
+    bitmap olarak çizilir, rakamlar silüetten oyulur.
 - Geri sayım RemoteViews içindeki countdown `Chronometer` ile işler. Eski
-  uygulamadaki `while(true)` coroutine ve dakikalık alarm yaklaşımı yasak.
-- Yalnız vakit sınırlarında exact alarm kurulur. Boot, saat ya da saat dilimi
-  değişimi ve paket güncellemesinde alarmlar yeniden kurulur.
-- Exact alarm izni yoksa inexact alarm kullanılır ve uygulamada uyarı gösterilir.
+  uygulamadaki `while(true)` coroutine yaklaşımı yasak.
+- Alarmlar tek seferliktir. Boot, saat ya da saat dilimi değişimi ve paket
+  güncellemesinde yeniden kurulur. İki tür var:
+  - **Vakit sınırı**: exact, `RTC_WAKEUP`.
+  - **Görünüm tiki**: özetin ya da simgenin değişeceği an. Saat sınırlarında
+    ve son 60 dakikada dakikada bir kurulur. `RTC` olduğu için cihazı
+    uyandırmaz, ekran açılınca teslim edilir.
+  - Tik `setExactAndAllowWhileIdle` ile kurulur. Bu bayraklı alarmlar uygulama
+    bekleme kovası kotasından muaf; bayraksız `setExact` "working set"
+    kovasında saatte ~10 alarma kısılıyor.
+- Exact alarm izni yoksa vakit sınırı inexact kurulur ve uygulamada uyarı
+  gösterilir. Özet ve dakika simgesi o durumda **hiç gösterilmez**: Android
+  12+ inexact alarmı en az 10 dk geciktirebildiği için yanlış sayı göstermek
+  yerine göstermemek seçildi.
 - Veri her gün WorkManager ile yenilenir.
 
 ## Komutlar ve Ortam

@@ -136,11 +136,22 @@ lib/<modul>/
 - Dosyalar `android/app/src/main/kotlin/com/sbugrayy/vakit/<modul>/` altında.
 - Bildirim motoru Dart'a ihtiyaç duymadan çalışır (Flutter kapalıyken de).
 - Geri sayım RemoteViews içindeki countdown `Chronometer` ile yapılır.
-  Saniyelik ya da dakikalık güncelleme döngüsü, `while(true)`, sürekli çalışan
-  servis **yasak**. Alarm yalnız vakit sınırlarında kurulur.
+  `while(true)`, `Handler`/`Timer`/coroutine döngüsü ve sürekli çalışan servis
+  **yasak**.
+- Alarmlar tek seferliktir ve her `NotificationEngine.refresh`'te yeniden
+  kurulur. İki tür var:
+  - **Vakit sınırı alarmı** (`RTC_WAKEUP`): vakit girince bildirimi bir sonraki
+    vakte geçirir.
+  - **Görünüm tiki** (`RTC`, cihazı uyandırmaz): yalnız kesin alarm izni
+    varken, "N saat kaldı" özetinin ya da durum çubuğu simgesinin değişeceği
+    ana kurulur. Saat sınırlarında ve vakte son 60 dakikada dakikada bir.
+  Bunların dışında periyodik alarm kurulmaz.
 - Bildirim metin renkleri sabit yazılmaz: `DecoratedCustomViewStyle` ve
   `TextAppearance.Compat.Notification.*` stilleri kullanılır. Bildirim açık ve
   koyu panelde okunur olmalı.
+- Durum çubuğu simgesi tek renkli bir maskedir; sistem yalnız alfa kanalını
+  kullanıp kendisi renklendirir. Vektör dolgusu `#FFFFFFFF` bu yüzden serbest.
+  Çalışma anında çizilen simgede (bitmap) Kotlin'de renk değeri yazılmaz.
 - Receiver'lar `android:exported="false"`. Yalnız sistem yayınlarını
   (`BOOT_COMPLETED`, `TIME_SET`, `TIMEZONE_CHANGED`, `MY_PACKAGE_REPLACED`)
   dinleyen receiver `exported="true"` olabilir ve özel action kabul etmez.
