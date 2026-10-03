@@ -105,3 +105,15 @@ Hiçbiri raporda geçmiyordu. Kontrol edilecekler:
 `main()` içinde eklentiye dokunmadan önce `WidgetsFlutterBinding.ensureInitialized()`
 çağrılmalı. Bu hatayı yalnız `flutter run` gösterir: finans-app'te bütün testler
 geçerken uygulama hiç açılmıyordu.
+
+## 12. Paket API'si hakkında eski bilgi
+
+agy'nin bir paketin API'si hakkındaki bilgisi projedeki sürümden eski olabilir.
+Görev 003'te dio 5.11'deki `DioExceptionType.transformTimeout`'u bilmediği için
+`switch` eksik kaldı ve kod derlenmedi.
+
+- Paket enum'ları üzerindeki `switch`'ler tam olmalı ve `default:` kullanılmamalı.
+  Böylece yeni bir değer derleme hatası verip fark ettirir.
+- Brifte, kullanılacak paketin sürümüne özgü bilinen ayrıntıları (yeni enum
+  değeri, ad çakışması gibi) önceden yaz. Görev 006'da `adhan_dart`'ın
+  `Prayer` çakışması böyle verildi.
