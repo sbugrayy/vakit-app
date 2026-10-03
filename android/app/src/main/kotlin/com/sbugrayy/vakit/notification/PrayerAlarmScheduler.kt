@@ -45,11 +45,43 @@ class PrayerAlarmScheduler(private val context: Context) {
         }
     }
 
+    fun scheduleTickAt(triggerAtMillis: Long) {
+        val am = alarmManager ?: return
+        if (!canScheduleExact()) {
+            // Inexact alarm en az 10 dk gecikebileceğinden yedek yok;
+            // yanlış dakika göstermektense hiç göstermemek seçildi.
+            cancelTick()
+            return
+        }
+
+        val pendingIntent = createTickPendingIntent()
+        try {
+            // RTC: Ekran kapalıyken uyandırmaz, pil tüketimini engeller.
+            // AllowWhileIdle: Standby kovası kotasından muaf tutarak dakikalık
+            // tiklerin gecikmesini önler.
+            am.setExactAndAllowWhileIdle(
+                AlarmManager.RTC,
+                triggerAtMillis,
+                pendingIntent
+            )
+        } catch (e: SecurityException) {
+            cancelTick()
+        }
+    }
+
+    fun cancelTick() {
+        val am = alarmManager ?: return
+        val pendingIntent = createTickPendingIntent()
+        am.cancel(pendingIntent)
+        pendingIntent.cancel()
+    }
+
     fun cancel() {
         val am = alarmManager ?: return
         val pendingIntent = createPendingIntent()
         am.cancel(pendingIntent)
         pendingIntent.cancel()
+        cancelTick()
     }
 
     private fun createPendingIntent(): PendingIntent {
@@ -62,7 +94,18 @@ class PrayerAlarmScheduler(private val context: Context) {
         )
     }
 
+    private fun createTickPendingIntent(): PendingIntent {
+        val intent = Intent(context, PrayerAlarmReceiver::class.java)
+        return PendingIntent.getBroadcast(
+            context,
+            TICK_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
+
     companion object {
         const val ALARM_REQUEST_CODE = 1002
+        const val TICK_REQUEST_CODE = 1006
     }
 }

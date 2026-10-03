@@ -42,8 +42,21 @@ object NotificationEngine {
             PersistentNotification.showExpired(context, payload.locationLabel)
             scheduler.cancel()
         } else {
-            PersistentNotification.show(context, state)
+            val display = if (scheduler.canScheduleExact()) {
+                StatusCountdown.displayAt(state.next.epochMillis, now)
+            } else {
+                // Kesin alarm izni yokken görünüm tiki kurulamayacağından
+                // özet gösterilmez.
+                null
+            }
+            PersistentNotification.show(context, state, display)
             scheduler.scheduleAt(state.next.epochMillis + 1_000L)
+            val tickAt = display?.nextTickAtMillis
+            if (tickAt != null) {
+                scheduler.scheduleTickAt(tickAt)
+            } else {
+                scheduler.cancelTick()
+            }
         }
     }
 }

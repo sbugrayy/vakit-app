@@ -54,7 +54,11 @@ object PersistentNotification {
         R.id.time_hl_5
     )
 
-    fun show(context: Context, state: NotificationState) {
+    fun show(
+        context: Context,
+        state: NotificationState,
+        display: CountdownDisplay?
+    ) {
         if (!hasNotificationPermission(context)) {
             return
         }
@@ -82,6 +86,18 @@ object PersistentNotification {
         val base = SystemClock.elapsedRealtime() +
             (state.next.epochMillis - System.currentTimeMillis())
 
+        val summaryText = when {
+            display?.minutesLeft != null -> context.getString(
+                R.string.notification_minutes_left,
+                display.minutesLeft
+            )
+            display?.hoursLeft != null -> context.getString(
+                R.string.notification_hours_left,
+                display.hoursLeft
+            )
+            else -> null
+        }
+
         val collapsedView = RemoteViews(
             context.packageName,
             R.layout.notification_vakit_collapsed
@@ -89,6 +105,12 @@ object PersistentNotification {
             setTextViewText(R.id.title, title)
             setChronometer(R.id.countdown, base, null, true)
             setChronometerCountDown(R.id.countdown, true)
+            if (summaryText != null) {
+                setTextViewText(R.id.summary, summaryText)
+                setViewVisibility(R.id.summary, View.VISIBLE)
+            } else {
+                setViewVisibility(R.id.summary, View.GONE)
+            }
         }
 
         val expandedView = RemoteViews(
@@ -98,6 +120,12 @@ object PersistentNotification {
             setTextViewText(R.id.title_expanded, title)
             setChronometer(R.id.countdown_expanded, base, null, true)
             setChronometerCountDown(R.id.countdown_expanded, true)
+            if (summaryText != null) {
+                setTextViewText(R.id.summary_expanded, summaryText)
+                setViewVisibility(R.id.summary_expanded, View.VISIBLE)
+            } else {
+                setViewVisibility(R.id.summary_expanded, View.GONE)
+            }
 
             for (i in 0 until minOf(state.day.times.size, 6)) {
                 val moment = state.day.times[i]
