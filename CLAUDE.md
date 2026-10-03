@@ -245,6 +245,13 @@ mobil uygulamaya gömülecek bir sır gerektirdiği için kullanılmıyor.
   - Kapalıyken: ilçe, sıradaki vakit, geri sayım ve kalan süre özeti
     ("9 saat kaldı"; son saatte "12 dakika kaldı").
   - Açıkken: aynı satırlar, altında 6 vakit, sıradaki vurgulu.
+- Kanal `vakit_geri_sayim`: `IMPORTANCE_DEFAULT`; ses, titreşim ve ışık
+  kapalı. Bildirim builder'da `setSilent` + `setOnlyAlertOnce`.
+  - `IMPORTANCE_LOW` "sessiz" sayılır. Pixel'de varsayılan
+    `hideSilentStatusBar=true` ve sessiz bildirimin simgesi durum çubuğunda
+    gösterilmez; 2026-10-03'te emülatörde ölçüldü.
+  - İlk kanal `vakit_kalici` bu yüzden siliniyor. Kanal önemi sonradan kodla
+    yükseltilemiyor, yeni kimlik şart.
 - Durum çubuğu simgesi:
   - Vakte 60 dakikadan fazla varken hilal-yıldız (`ic_stat_vakit`).
   - Son 60 dakikada cami silüeti, içinde kalan dakika. Simge çalışma anında
