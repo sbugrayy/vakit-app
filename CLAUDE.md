@@ -348,6 +348,20 @@ emülatörde/cihazda çalıştırma. Hiçbiri atlanmaz.
 - Emülatör imajı Play Store'lu (`adb root` yok); sistem saati değiştirilemez.
   Vakit geçişi gerçek saatle ya da `dumpsys alarm` ile doğrulanır. 2026-10-03'te
   Akşam → Yatsı geçişi canlı izlendi.
+- **Saati değiştirmeden "son 60 dakika" testi (sahte yük).** Native motor
+  yükü `shared_prefs/vakit_bildirim.xml` içindeki `payload_json`'dan okur.
+  Debug sürümde:
+  1. Uygulamayı arka plana al ve `adb shell am kill com.sbugrayy.vakit` ile
+     kapat. `force-stop` kullanma: uygulama "stopped" olur, yayın almaz.
+  2. Vakitleri birkaç dakika sonraya koyan XML'i yaz:
+     `adb shell "run-as com.sbugrayy.vakit sh -c 'cat > shared_prefs/vakit_bildirim.xml'" < sahte.xml`
+  3. Uygulamayı açmadan tazelemeyi tetikle:
+     `appops set com.sbugrayy.vakit SCHEDULE_EXACT_ALARM deny`, ardından
+     `allow`. İzin verilince sistem `SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED`
+     yayınını gönderir.
+  4. Uygulamayı açınca Dart gerçek yükü yeniden yazar.
+  Durum çubuğu simgesi `dumpsys`'te yalnız `Icon(typ=BITMAP ...)` görünür;
+  rakam ekran görüntüsünden okunur.
 - **Emülatörde ters geokodlama çalışmıyor.** Play Services'in geokodlayıcısı
   da Norton'a takılıyor ve kullanıcı sertifikalarına güvenmiyor
   (`GmsGeocoder: reverse geocoding network failure`). "Konumumu bul" bu yüzden

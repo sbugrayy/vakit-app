@@ -47,7 +47,7 @@ yürüyor.
 ### Sıradaki adımlar (2026-10-03 akşamı itibarıyla)
 
 1. **Buğra:** `design/STITCH_PROMPTS.md` ile Stitch'te ekranları üretip `design/stitch/` altına koymak (Faz 1). Ekranlar şu an geçici tasarımla çalışıyor.
-2. **Gerçek telefonda deneme** — 2026-10-03 akşamı Buğra denedi: konum bulunuyor, kıble gösteriliyor, bildirimde canlı sayaç çalışıyor. İstediği eklemeler 018a/018b'de (özet satırı, durum çubuğu simgeleri). Telefonda kalan: yeniden başlatma sonrası bildirim ve yeni simgeler.
+2. **Gerçek telefonda deneme** — 2026-10-03 akşamı Buğra denedi: konum bulunuyor, kıble gösteriliyor, bildirimde canlı sayaç çalışıyor. İstediği eklemeler 018a–d'de yapıldı ve emülatörde doğrulandı (özet satırı, durum çubuğu simgeleri, yeniden başlatma). Telefonda bakılacak: yeni simgeler One UI durum çubuğunda görünüyor mu, "Alarmlar ve hatırlatıcılar" izni açık mı (kapalıysa özet ve dakika simgesi bilerek gösterilmez).
 3. Geokodlama başarısız olursa koordinatı saklayıp ili elle seçtirme (Faz 2 notu).
 4. Stitch gelince: Ana Sayfa ve Konum Seçimi'ni yeniden giydirme; Aylık Vakitler, Ayarlar ve İzinler ekranları; Kıble saati kartı.
 5. İnternet uygun olunca:
@@ -141,8 +141,10 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] agy 011: ana manifestte INTERNET (release'te eksikti); debug'da kullanıcı sertifikalarına güven
 - [x] agy 012: yalnız debug'da, `--dart-define` ile verilirse ek kök sertifika (Norton/emülatör)
 - [x] Claude: emülatörde kanıt (aşağıda "Uçtan uca sonuçlar")
-- [ ] agy 018a: kalan süre özeti ("9 saat kaldı" / "12 dakika kaldı") + görünüm tiki alarmı (`RTC`, yalnız kesin alarm izniyle)
-- [ ] agy 018b: durum çubuğu simgeleri. Hilal-yıldız; son 60 dakikada cami silüetinde kalan dakika (çalışma anında bitmap)
+- [x] agy 018a: kalan süre özeti ("9 saat kaldı" / "12 dakika kaldı") + görünüm tiki alarmı (`RTC`, yalnız kesin alarm izniyle)
+- [x] agy 018b: durum çubuğu simgeleri. Hilal-yıldız; son 60 dakikada cami silüetinde kalan dakika (çalışma anında bitmap)
+- [x] agy 018c: kanal `vakit_geri_sayim` (`IMPORTANCE_DEFAULT`, sessiz). `IMPORTANCE_LOW` iken simge durum çubuğunda hiç görünmüyordu (`hideSilentStatusBar=true`)
+- [x] agy 018d: cami simgesinde rakam kutusu 13×8,5 → 14×12,5 birim; durum çubuğu boyutunda okunur
 - [ ] WorkManager günlük yenileme: `work-runtime` önbellekte yok, indirme gerekiyor; ertelendi. Uygulama her açılışta tazeliyor, 30 gün bitince bildirim "uygulamayı açın" diyor
 
 ### Faz 5 — Kıble — KOD TAMAM, cihazda doğrulama bekliyor (2026-10-03)
@@ -177,7 +179,19 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 | Paket güncellemesinde (yeni sürüm kurulumu) alarm yeniden kuruldu | ✓ |
 | Kıble: koordinatsız konumda "Konumumu bul"a yönlendirme | ✓ |
 | "Konumumu bul": konum izni ve konum alındı, ters geokodlama Norton yüzünden düştü, "listeden seçin" gösterildi | ⚠ gerçek telefonda doğrulanmalı |
-| Yeniden başlatma (BOOT_COMPLETED) sonrası bildirim | — yapılmadı; emülatör o sırada kullanılıyor görünüyordu |
+| Yeniden başlatma (BOOT_COMPLETED) sonrası bildirim | — yapılmadı; emülatör o sırada kullanılıyor görünüyordu (018 testinde yapıldı, aşağıda) |
+
+## 5b. Kalan süre özeti ve durum çubuğu simgesi (018, 2026-10-03 gece, emülatör)
+
+| Adım | Sonuç |
+|---|---|
+| Gerçek veri (Balıkesir, İmsak 05:38, saat 23:05): panelde "6 saat kaldı", geri sayım 6:32:43 | ✓ açık ve koyu tema, açık ve kapalı görünüm |
+| Durum çubuğunda hilal-yıldız | ✓ 018c'den sonra (öncesinde sessiz kanal yüzünden simge yoktu) |
+| Alarmlar: tik `RTC` 23:38:01 ("6 → 5 saat"), vakit sınırı `RTC_WAKEUP` 05:38:01; ikisi de `window=0` | ✓ |
+| Sahte yük (vakit 9 dk sonra): cami simgesinde **9**; uygulama süreci kapalıyken 23:07:01 tikinde **8**, 23:14'te **1** | ✓ |
+| Vakit geçişi 23:15: bildirim kendiliğinden "Yatsı 00:45"e geçti, simge hilal-yıldıza döndü, sonraki tik "1 saat → 60 dk" anına kuruldu | ✓ |
+| İki haneli: **60** → 23:17:01'de **59**, panelde "59 dakika kaldı" | ✓ (018d'nin büyük rakamlarıyla) |
+| **Yeniden başlatma** (`adb reboot`), uygulama açılmadan: bildirim, hilal-yıldız ve iki alarm (tik 23:38:01, vakit sınırı 05:38:01) geri geldi | ✓ BOOT_COMPLETED |
 
 Yol üstünde bulunup düzeltilenler:
 
