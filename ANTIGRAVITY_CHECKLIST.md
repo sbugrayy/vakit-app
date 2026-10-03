@@ -117,3 +117,29 @@ Görev 003'te dio 5.11'deki `DioExceptionType.transformTimeout`'u bilmediği iç
 - Brifte, kullanılacak paketin sürümüne özgü bilinen ayrıntıları (yeni enum
   değeri, ad çakışması gibi) önceden yaz. Görev 006'da `adhan_dart`'ın
   `Prayer` çakışması böyle verildi.
+
+## 13. Testte asılı kalan akış
+
+Tek abonelikli (`StreamController()`) bir akış hiç dinlenmediyse
+`await controller.close()` hiç tamamlanmaz. `tearDown` bunu beklerse test 30 sn
+zaman aşımına düşer (görev 016). İki çözüm var:
+
+- `close()`'u beklememek: `unawaited(...)`.
+- `StreamController.broadcast()` kullanmak.
+
+Benzer şekilde, bir `Cubit`'in yayını dinleyiciye bir sonraki mikro görevde
+ulaşır. `await cubit.start()` ardından hemen sayım yapma; `blocTest` kullan ya
+da `await Future<void>.delayed(Duration.zero)`.
+
+## 14. Paket içe aktarımının Flutter adlarını gölgelemesi
+
+`import 'package:intl/intl.dart';` kendi `TextDirection` sınıfını getirir ve
+Flutter'ınkini gölgeler (`TextDirection.ltr` yok hatası, görev 016). Paketten
+yalnız gerekeni al: `import 'package:intl/intl.dart' show NumberFormat;`.
+
+## 15. Aynı testte `MockCubit` durumunu değiştirmek
+
+Aynı test içinde `when(() => cubit.state).thenReturn(...)` ile ikinci durumu
+verip yeniden `pumpWidget` etmek `BlocBuilder`'ı güncellemez; akıştan olay
+gelmez. Ayrı `testWidgets` yaz ya da
+`whenListen(cubit, Stream.fromIterable([...]), initialState: ...)` kullan.
