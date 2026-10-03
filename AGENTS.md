@@ -52,6 +52,15 @@ düzeltme turu gerekmesin:
 | `sort_constructors_first` | Kurucular alanlardan ve metotlardan önce |
 | `avoid_redundant_argument_values` | Varsayılan değere eşit argümanı yazma |
 | `prefer_int_literals` | `double` parametreye tam değer verirken `90.0` değil `90` yaz |
+| `prefer_initializing_formals` | Özel alanı kurucuda doğrudan ata. Dart 3.12 **özel adlandırılmış parametreyi** destekliyor: `Foo({required this._store})`, çağıran yine `Foo(store: …)` yazar |
+| `discarded_futures` | `async` olmayan yerde dönen `Future`'ı `unawaited(...)` (`dart:async`) ile sar |
+| `unnecessary_lambdas` | `() => f()` yerine tearoff: `f` |
+| `use_named_constants` | Aynı değeri üreten kurucu yerine sınıfın sabiti (ör. `NotificationStatus.unavailable`) |
+| `avoid_dynamic_calls` | `dynamic` üzerinde çağrı yapma; önce `as Map<String, dynamic>` gibi tip ver |
+| `omit_local_variable_types` | Yerel değişkende tip yazma, `final` yeterli |
+
+`DateTime.utc(...)` bir `const` kurucu değil. Onu içeren nesne `const`
+olamaz; `final` kullan (görev 005'te derleme hatasına yol açtı).
 | `prefer_final_locals` | Yeniden atanmayan yerel değişken `final` |
 | `avoid_catches_without_on_clauses` | `on Exception catch (e)` |
 | `lines_longer_than_80_chars` | Satır en fazla 80 karakter |
