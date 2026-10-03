@@ -42,6 +42,20 @@ kotlin {
     }
 }
 
+dependencies {
+    // NotificationCompat ve RemoteViews yardımcıları (kalıcı bildirim motoru).
+    // Flutter embedding zaten 1.13.1'i getiriyor; açıkça yazmak sürümün
+    // kaymasını önlüyor. Sürüm makinenin önbelleğinde (indirme yok).
+    implementation("androidx.core:core:1.13.1")
+
+    // Bildirim motorunun saf Kotlin mantığı için JVM testleri
+    // (./gradlew :app:testDebugUnitTest). org.json Android'de platformun
+    // parçası, JVM testlerinde ise yok; gerçek uygulaması gerekiyor. İki
+    // sürüm de önbellekte.
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.json:json:20180813")
+}
+
 flutter {
     source = "../.."
 }

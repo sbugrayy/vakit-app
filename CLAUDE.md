@@ -299,6 +299,11 @@ emülatörde/cihazda çalıştırma. Hiçbiri atlanmaz.
     `android/settings.gradle.kts`'te). İndirmesiz derleme ~3 dk. Sürüm
     değiştirmek büyük indirme demek.
   - Yüzlerce MB'lık bir indirme başlatmadan önce Buğra'ya sor.
+- **`flutter build` ile `flutter test` aynı anda çalıştırılmaz.** 2026-10-03'te
+  derleme, arkada `tool/verify_agy.sh` çalışırken Gradle iç hatasıyla düştü
+  (`Cannot invoke "java.util.List.get(int)" because "path" is null`). Tek
+  başına tekrarlanınca 2 dakikada geçti. Derlemeyi agy ve doğrulama
+  bitince başlat.
 - **Emülatör saat dilimi UTC.** Uygulama vakitleri cihaz saat diliminden
   bağımsız hesaplamalı; ekranda gösterilen saatler yine Türkiye saatiyle
   (verinin ofsetiyle) yazılmalı.
