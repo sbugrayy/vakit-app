@@ -137,9 +137,14 @@ void main() {
 
     test('createAppRouter kök rotasını ve başlangıç konumunu ayarlar', () {
       final router = createAppRouter();
-      expect(router.configuration.routes.length, equals(1));
-      final route = router.configuration.routes.first as GoRoute;
-      expect(route.path, equals('/'));
+      expect(router.configuration.routes.length, equals(2));
+      final routes = router.configuration.routes.cast<GoRoute>().toList();
+      expect(routes[0].path, equals('/'));
+      expect(routes[1].path, equals('/konum'));
+      expect(
+        router.routeInformationProvider.value.uri.path,
+        equals('/'),
+      );
     });
   });
 }
