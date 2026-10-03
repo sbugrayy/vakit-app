@@ -1,7 +1,7 @@
-// Uygulama içi sayfa yönlendirme yapılandırması ve geçici ana sayfa.
+// Uygulama içi sayfa yönlendirme yapılandırması.
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vakit/prayer_times/view/home_page.dart';
 
 final GoRouter appRouter = createAppRouter();
 
@@ -11,21 +11,8 @@ GoRouter createAppRouter({String initialLocation = '/'}) {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const HomePlaceholderPage(),
+        builder: (context, state) => const HomePage(),
       ),
     ],
   );
-}
-
-class HomePlaceholderPage extends StatelessWidget {
-  const HomePlaceholderPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Vakit'),
-      ),
-    );
-  }
 }

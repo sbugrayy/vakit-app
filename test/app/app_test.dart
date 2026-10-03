@@ -11,6 +11,7 @@ import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/navigation/app_router.dart';
 import 'package:vakit/notifications/repository/notification_bridge.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
+import 'package:vakit/prayer_times/view/home_page.dart';
 import 'package:vakit/shared/clock.dart';
 import 'package:vakit/shared/diyanet/diyanet_api.dart';
 
@@ -42,6 +43,11 @@ void main() {
     diyanetApi = _MockDiyanetApi();
     notificationBridge = _MockNotificationBridge();
     clock = _MockClock();
+
+    when(() => locationStore.load()).thenAnswer((_) async => null);
+    when(
+      () => notificationBridge.requestNotificationPermission(),
+    ).thenAnswer((_) async => true);
   });
 
   Widget buildTestApp({RouterConfig<Object>? routerConfig}) {
@@ -57,7 +63,7 @@ void main() {
 
   group('App', () {
     testWidgets(
-      'MaterialApp tr yereli, bağımlılıklar ve yer tutucu sayfa ile başlar',
+      'MaterialApp tr yereli, bağımlılıklar ve ana sayfa ile başlar',
       (tester) async {
         tester.view.physicalSize = const Size(360, 800);
         tester.view.devicePixelRatio = 1;
@@ -67,7 +73,7 @@ void main() {
         await tester.pumpWidget(buildTestApp());
         await tester.pump();
 
-        expect(find.text('Vakit'), findsOneWidget);
+        expect(find.byType(HomePage), findsOneWidget);
 
         final materialApp = tester.widget<MaterialApp>(
           find.byType(MaterialApp),
@@ -77,7 +83,7 @@ void main() {
         expect(materialApp.supportedLocales, contains(const Locale('tr')));
         expect(materialApp.themeMode, equals(ThemeMode.system));
 
-        final element = tester.element(find.text('Vakit'));
+        final element = tester.element(find.byType(HomePage));
         expect(element.read<LocationStore>(), equals(locationStore));
         expect(
           element.read<PrayerTimesRepository>(),
@@ -105,26 +111,27 @@ void main() {
             Brightness.light;
         await tester.pumpWidget(buildTestApp());
         await tester.pump();
-        expect(find.text('Vakit'), findsOneWidget);
+        expect(find.byType(HomePage), findsOneWidget);
 
         tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
         await tester.pumpWidget(buildTestApp());
         await tester.pump();
-        expect(find.text('Vakit'), findsOneWidget);
+        expect(find.byType(HomePage), findsOneWidget);
       },
     );
 
     testWidgets(
-      'HomePlaceholderPage doğrudan pump edildiğinde Vakit metnini gösterir',
+      'HomePage doğrudan kök rotada gösterilir',
       (tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: HomePlaceholderPage(),
-          ),
-        );
+        tester.view.physicalSize = const Size(360, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-        expect(find.byType(HomePlaceholderPage), findsOneWidget);
-        expect(find.text('Vakit'), findsOneWidget);
+        await tester.pumpWidget(buildTestApp());
+        await tester.pump();
+
+        expect(find.byType(HomePage), findsOneWidget);
       },
     );
 
