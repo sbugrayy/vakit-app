@@ -161,8 +161,15 @@ object PersistentNotification {
 
         val contentIntent = createContentPendingIntent(context)
 
+        val minutesLeft = display?.minutesLeft
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_stat_vakit)
+            .apply {
+                if (minutesLeft != null) {
+                    setSmallIcon(StatusIcons.minuteIcon(context, minutesLeft))
+                } else {
+                    setSmallIcon(R.drawable.ic_stat_vakit)
+                }
+            }
             .setContentTitle(title)
             .setContentText(summaryLine)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
