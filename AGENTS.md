@@ -51,6 +51,7 @@ düzeltme turu gerekmesin:
 | `prefer_const_constructors` / `prefer_const_literals_to_create_immutables` | Sabit olabilen her kurucu ve liste `const` |
 | `sort_constructors_first` | Kurucular alanlardan ve metotlardan önce |
 | `avoid_redundant_argument_values` | Varsayılan değere eşit argümanı yazma |
+| `prefer_int_literals` | `double` parametreye tam değer verirken `90.0` değil `90` yaz |
 | `prefer_final_locals` | Yeniden atanmayan yerel değişken `final` |
 | `avoid_catches_without_on_clauses` | `on Exception catch (e)` |
 | `lines_longer_than_80_chars` | Satır en fazla 80 karakter |
