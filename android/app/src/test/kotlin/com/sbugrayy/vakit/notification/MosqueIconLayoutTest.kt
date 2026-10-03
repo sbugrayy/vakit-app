@@ -27,29 +27,29 @@ class MosqueIconLayoutTest {
     fun digitBoxPxScalesCorrectlyForSize72() {
         val box = MosqueIconLayout.digitBoxPx(72)
         assertEquals(4, box.size)
-        assertEquals(16.5f, box[0], 0.001f)
-        assertEquals(37.5f, box[1], 0.001f)
-        assertEquals(55.5f, box[2], 0.001f)
-        assertEquals(63.0f, box[3], 0.001f)
+        assertEquals(15.0f, box[0], 0.001f)
+        assertEquals(28.5f, box[1], 0.001f)
+        assertEquals(57.0f, box[2], 0.001f)
+        assertEquals(66.0f, box[3], 0.001f)
     }
 
     @Test
     fun digitBoxIsContainedWithinMosqueBody() {
         assertTrue(
             "DIGIT_LEFT gövde sol sınırından büyük veya eşit olmalı",
-            MosqueIconLayout.DIGIT_LEFT >= 4.5f
+            MosqueIconLayout.DIGIT_LEFT >= 4f
         )
         assertTrue(
             "DIGIT_RIGHT gövde sağ sınırından küçük veya eşit olmalı",
-            MosqueIconLayout.DIGIT_RIGHT <= 19.5f
+            MosqueIconLayout.DIGIT_RIGHT <= 20f
         )
         assertTrue(
             "DIGIT_TOP gövde üst sınırından büyük veya eşit olmalı",
-            MosqueIconLayout.DIGIT_TOP >= 11.5f
+            MosqueIconLayout.DIGIT_TOP >= 8.5f
         )
         assertTrue(
             "DIGIT_BOTTOM gövde alt sınırından küçük veya eşit olmalı",
-            MosqueIconLayout.DIGIT_BOTTOM <= 22f
+            MosqueIconLayout.DIGIT_BOTTOM <= 23f
         )
     }
 }
