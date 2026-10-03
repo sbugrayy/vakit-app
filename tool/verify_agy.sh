@@ -146,10 +146,24 @@ elif [ -z "$(find test -name '*_test.dart' 2>/dev/null | head -1)" ]; then
   FAIL=1
 else
   echo "== 5) Testler: flutter test --coverage =="
+  # lcov yalnız testlerin yüklediği dosyaları içerir; hiç yüklenmeyen dosya
+  # kapsamayı olduğundan yüksek gösterir. very_good_cli'deki gibi bütün lib/
+  # dosyalarını yükleyen geçici bir test üretiliyor: test edilmeyen satırlar
+  # 0 isabetle lcov'a girer. Yalnız sabit içeren dosyalar (ör. bir enum)
+  # satır üretmez, onlar zaten ölçüme girmez. Dosya iş bitince silinir;
+  # repoya girmez (.gitignore).
+  HELPER="test/coverage_helper_test.dart"
+  {
+    echo "// tool/verify_agy.sh tarafından üretildi; elle düzenleme, commit'leme."
+    find lib -name '*.dart' ! -path 'lib/main.dart' | sort \
+      | sed -E "s#^lib/(.*)\$#import 'package:vakit/\1';#"
+    echo "void main() {}"
+  } > "$HELPER"
   if ! flutter test --coverage; then
     echo "HATA: testler geçmedi."
     FAIL=1
   fi
+  rm -f "$HELPER"
 
   echo
   echo "== 6) Kapsama: lib/ geneli >= %$THRESHOLD =="
@@ -184,18 +198,6 @@ else
       FAIL=1
     fi
 
-    # lcov yalnız testlerin yüklediği dosyaları içerir; hiç yüklenmeyen dosya
-    # kapsamayı olduğundan yüksek gösterir. Onları ayrıca yakala.
-    MISSING=""
-    while IFS= read -r src; do
-      [ "$src" = "lib/main.dart" ] && continue
-      grep -qF "$src" "$NORMALIZED" || MISSING="${MISSING}    ${src}"$'\n'
-    done < <(find lib -name '*.dart' | sort)
-    if [ -n "$MISSING" ]; then
-      echo "HATA: hiçbir testin yüklemediği dosyalar (kapsama %0):"
-      printf '%s' "$MISSING"
-      FAIL=1
-    fi
     rm -f "$NORMALIZED"
   fi
 fi

@@ -46,3 +46,6 @@ app.*.map.json
 
 # agy (Antigravity CLI) brifleri ve çalıştırma kayıtları yerel kalır.
 /.agy/
+
+# tool/verify_agy.sh ölçüm sırasında üretip siliyor.
+/test/coverage_helper_test.dart
