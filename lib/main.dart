@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:vakit/app/app.dart';
+import 'package:vakit/location/repository/device_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/notifications/repository/notification_bridge.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
     clock: clock,
   );
   final notificationBridge = NotificationBridge();
+  final deviceLocation = DeviceLocation();
 
   runApp(
     App(
@@ -32,6 +34,7 @@ Future<void> main() async {
       diyanetApi: diyanetApi,
       notificationBridge: notificationBridge,
       clock: clock,
+      deviceLocation: deviceLocation,
     ),
   );
 }

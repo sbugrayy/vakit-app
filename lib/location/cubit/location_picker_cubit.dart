@@ -2,9 +2,13 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vakit/location/cubit/location_picker_state.dart';
+import 'package:vakit/location/district_matcher.dart';
 import 'package:vakit/location/models/city.dart';
 import 'package:vakit/location/models/district.dart';
+import 'package:vakit/location/models/geo_point.dart';
+import 'package:vakit/location/models/geocoded_place.dart';
 import 'package:vakit/location/models/selected_location.dart';
+import 'package:vakit/location/repository/device_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/location/turkish_text.dart';
 import 'package:vakit/shared/diyanet/diyanet_api.dart';
@@ -13,10 +17,12 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
   LocationPickerCubit({
     required this._api,
     required this._locationStore,
+    required this._deviceLocation,
   }) : super(const LocationPickerState());
 
   final DiyanetApi _api;
   final LocationStore _locationStore;
+  final DeviceLocation _deviceLocation;
 
   List<City> get visibleCities => state.visibleCities;
 
@@ -138,6 +144,202 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
       }
       emit(
         state.copyWith(
+          errorMessage:
+              'Konum kaydedilemedi. İnternet bağlantınızı kontrol edin.',
+        ),
+      );
+    }
+  }
+
+  Future<void> locateMe() async {
+    if (state.locating) {
+      return;
+    }
+    emit(state.copyWith(locating: true, clearErrorMessage: true));
+
+    final bool granted;
+    try {
+      granted = await _deviceLocation.requestPermission();
+    } on Exception {
+      if (isClosed) {
+        return;
+      }
+      emit(
+        state.copyWith(
+          locating: false,
+          errorMessage:
+              'Konum izni verilmedi. İlinizi listeden seçebilirsiniz.',
+        ),
+      );
+      return;
+    }
+    if (isClosed) {
+      return;
+    }
+    if (!granted) {
+      emit(
+        state.copyWith(
+          locating: false,
+          errorMessage:
+              'Konum izni verilmedi. İlinizi listeden seçebilirsiniz.',
+        ),
+      );
+      return;
+    }
+
+    final GeoPoint point;
+    try {
+      point = await _deviceLocation.currentLocation();
+    } on Exception {
+      if (isClosed) {
+        return;
+      }
+      emit(
+        state.copyWith(
+          locating: false,
+          errorMessage: 'Konumunuz alınamadı. İlinizi listeden seçin.',
+        ),
+      );
+      return;
+    }
+    if (isClosed) {
+      return;
+    }
+
+    final GeocodedPlace place;
+    try {
+      place = await _deviceLocation.reverseGeocode(point);
+    } on Exception {
+      if (isClosed) {
+        return;
+      }
+      emit(
+        state.copyWith(
+          locating: false,
+          errorMessage: 'Konumunuzun ili bulunamadı. İlinizi listeden seçin.',
+        ),
+      );
+      return;
+    }
+    if (isClosed) {
+      return;
+    }
+
+    final province = place.province?.trim();
+    if (province == null || province.isEmpty) {
+      emit(
+        state.copyWith(
+          locating: false,
+          errorMessage: 'Konumunuzun ili bulunamadı. İlinizi listeden seçin.',
+        ),
+      );
+      return;
+    }
+
+    var cities = state.cities;
+    if (cities.isEmpty) {
+      try {
+        final fetched = await _api.fetchCities();
+        if (isClosed) {
+          return;
+        }
+        cities = List<City>.of(fetched)..sort(_compareCities);
+        emit(state.copyWith(cities: cities));
+      } on Exception {
+        if (isClosed) {
+          return;
+        }
+        emit(
+          state.copyWith(
+            locating: false,
+            errorMessage:
+                'İller alınamadı. İnternet bağlantınızı kontrol edin.',
+          ),
+        );
+        return;
+      }
+    }
+
+    final city = matchCity(cities, province);
+    if (city == null) {
+      emit(
+        state.copyWith(
+          locating: false,
+          errorMessage:
+              'Bulunduğunuz il Diyanet listesinde bulunamadı. Listeden seçin.',
+        ),
+      );
+      return;
+    }
+
+    final List<District> districts;
+    try {
+      districts = await _api.fetchDistricts(city.id);
+    } on Exception {
+      if (isClosed) {
+        return;
+      }
+      emit(
+        state.copyWith(
+          locating: false,
+          errorMessage:
+              'İlçeler alınamadı. İnternet bağlantınızı kontrol edin.',
+        ),
+      );
+      return;
+    }
+    if (isClosed) {
+      return;
+    }
+
+    final district = matchDistrict(
+      districts,
+      cityName: city.name,
+      districtName: place.district,
+    );
+    if (district == null) {
+      emit(
+        state.copyWith(
+          locating: false,
+          errorMessage:
+              'Bulunduğunuz il Diyanet listesinde bulunamadı. Listeden seçin.',
+        ),
+      );
+      return;
+    }
+
+    final isCenter = _isCenterDistrict(district, city);
+    final cityName = displayName(city.name);
+    final districtName = isCenter ? cityName : displayName(district.name);
+
+    final selectedLocation = SelectedLocation(
+      cityId: city.id,
+      cityName: cityName,
+      districtId: district.id,
+      districtName: districtName,
+      latitude: point.latitude,
+      longitude: point.longitude,
+    );
+
+    try {
+      await _locationStore.save(selectedLocation);
+      if (isClosed) {
+        return;
+      }
+      emit(
+        state.copyWith(
+          locating: false,
+          saved: true,
+          clearErrorMessage: true,
+        ),
+      );
+    } on Exception {
+      if (isClosed) {
+        return;
+      }
+      emit(
+        state.copyWith(
+          locating: false,
           errorMessage:
               'Konum kaydedilemedi. İnternet bağlantınızı kontrol edin.',
         ),

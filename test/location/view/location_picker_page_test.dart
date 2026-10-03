@@ -10,6 +10,7 @@ import 'package:vakit/location/cubit/location_picker_cubit.dart';
 import 'package:vakit/location/cubit/location_picker_state.dart';
 import 'package:vakit/location/models/city.dart';
 import 'package:vakit/location/models/district.dart';
+import 'package:vakit/location/repository/device_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/location/view/location_picker_page.dart';
 import 'package:vakit/shared/diyanet/diyanet_api.dart';
@@ -21,6 +22,8 @@ class _MockLocationPickerCubit extends MockCubit<LocationPickerState>
 class _MockDiyanetApi extends Mock implements DiyanetApi {}
 
 class _MockLocationStore extends Mock implements LocationStore {}
+
+class _MockDeviceLocation extends Mock implements DeviceLocation {}
 
 void main() {
   const adanaCity = City(id: '500', name: 'ADANA');
@@ -43,6 +46,7 @@ void main() {
     when(() => mockCubit.loadCities()).thenAnswer((_) async {});
     when(() => mockCubit.selectCity(any())).thenAnswer((_) async {});
     when(() => mockCubit.selectDistrict(any())).thenAnswer((_) async {});
+    when(() => mockCubit.locateMe()).thenAnswer((_) async {});
     when(() => mockCubit.search(any())).thenReturn(null);
     when(() => mockCubit.backToCities()).thenReturn(null);
   });
@@ -99,6 +103,89 @@ void main() {
           await tester.pump();
 
           verify(() => mockCubit.selectCity(istanbulCity)).called(1);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      '"Konumumu bul" butonu görünür ve dokununca locateMe çağrılır '
+      '(açık ve koyu tema, 360 dp)',
+      (tester) async {
+        configure360dp(tester);
+
+        const state = LocationPickerState(
+          cities: [adanaCity, istanbulCity],
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(state: state, brightness: brightness),
+          );
+          await tester.pump();
+
+          expect(find.text('Konumumu bul'), findsOneWidget);
+          expect(find.byIcon(Icons.my_location), findsOneWidget);
+          expect(
+            find.text(
+              'İliniz ve ilçeniz otomatik bulunur. '
+              'Koordinatlarınız hiçbir sunucuya gönderilmez.',
+            ),
+            findsOneWidget,
+          );
+          expect(tester.takeException(), isNull);
+
+          await tester.tap(find.text('Konumumu bul'));
+          await tester.pump();
+
+          verify(() => mockCubit.locateMe()).called(1);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'İlçe adımında "Konumumu bul" butonu görünmez',
+      (tester) async {
+        configure360dp(tester);
+
+        const state = LocationPickerState(
+          step: LocationPickerStep.districts,
+          selectedCity: istanbulCity,
+          districts: [istanbulDistrict],
+        );
+
+        await tester.pumpWidget(buildSubject(state: state));
+        await tester.pump();
+
+        expect(find.text('Konumumu bul'), findsNothing);
+        expect(find.byIcon(Icons.my_location), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'locating iken düğme devre dışı ve ilerleme göstergesi görünür '
+      '(açık ve koyu tema, 360 dp)',
+      (tester) async {
+        configure360dp(tester);
+
+        const state = LocationPickerState(
+          cities: [adanaCity, istanbulCity],
+          locating: true,
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(state: state, brightness: brightness),
+          );
+          await tester.pump();
+
+          final button = tester.widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Konumumu bul'),
+          );
+          expect(button.onPressed, isNull);
+          expect(find.byType(CircularProgressIndicator), findsOneWidget);
           expect(tester.takeException(), isNull);
         }
       },
@@ -410,6 +497,7 @@ void main() {
 
         final api = _MockDiyanetApi();
         final store = _MockLocationStore();
+        final deviceLocation = _MockDeviceLocation();
         when(api.fetchCities).thenAnswer((_) async => []);
 
         await tester.pumpWidget(
@@ -417,6 +505,7 @@ void main() {
             providers: [
               RepositoryProvider<DiyanetApi>.value(value: api),
               RepositoryProvider<LocationStore>.value(value: store),
+              RepositoryProvider<DeviceLocation>.value(value: deviceLocation),
             ],
             child: MaterialApp(
               theme: AppTheme.light(),

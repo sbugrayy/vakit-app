@@ -15,6 +15,7 @@ class LocationPickerState extends Equatable {
     this.selectedCity,
     this.query = '',
     this.loading = false,
+    this.locating = false,
     this.errorMessage,
     this.saved = false,
   });
@@ -25,6 +26,7 @@ class LocationPickerState extends Equatable {
   final City? selectedCity;
   final String query;
   final bool loading;
+  final bool locating;
   final String? errorMessage;
   final bool saved;
 
@@ -68,6 +70,7 @@ class LocationPickerState extends Equatable {
     bool clearSelectedCity = false,
     String? query,
     bool? loading,
+    bool? locating,
     String? errorMessage,
     bool clearErrorMessage = false,
     bool? saved,
@@ -81,6 +84,7 @@ class LocationPickerState extends Equatable {
           : (selectedCity ?? this.selectedCity),
       query: query ?? this.query,
       loading: loading ?? this.loading,
+      locating: locating ?? this.locating,
       errorMessage: clearErrorMessage
           ? null
           : (errorMessage ?? this.errorMessage),
@@ -96,6 +100,7 @@ class LocationPickerState extends Equatable {
     selectedCity,
     query,
     loading,
+    locating,
     errorMessage,
     saved,
   ];

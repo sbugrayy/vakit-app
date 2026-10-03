@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:vakit/location/repository/device_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/navigation/app_router.dart';
 import 'package:vakit/notifications/repository/notification_bridge.dart';
@@ -18,6 +19,7 @@ class App extends StatelessWidget {
     required this.diyanetApi,
     required this.notificationBridge,
     required this.clock,
+    required this.deviceLocation,
     this.routerConfig,
     super.key,
   });
@@ -27,6 +29,7 @@ class App extends StatelessWidget {
   final DiyanetApi diyanetApi;
   final NotificationBridge notificationBridge;
   final Clock clock;
+  final DeviceLocation deviceLocation;
   final RouterConfig<Object>? routerConfig;
 
   @override
@@ -42,6 +45,7 @@ class App extends StatelessWidget {
           value: notificationBridge,
         ),
         RepositoryProvider<Clock>.value(value: clock),
+        RepositoryProvider<DeviceLocation>.value(value: deviceLocation),
       ],
       child: MaterialApp.router(
         title: 'Vakit',

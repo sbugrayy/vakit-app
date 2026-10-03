@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:vakit/app/app.dart';
+import 'package:vakit/location/repository/device_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/navigation/app_router.dart';
 import 'package:vakit/notifications/repository/notification_bridge.dart';
@@ -26,12 +27,15 @@ class _MockNotificationBridge extends Mock implements NotificationBridge {}
 
 class _MockClock extends Mock implements Clock {}
 
+class _MockDeviceLocation extends Mock implements DeviceLocation {}
+
 void main() {
   late _MockLocationStore locationStore;
   late _MockPrayerTimesRepository prayerTimesRepository;
   late _MockDiyanetApi diyanetApi;
   late _MockNotificationBridge notificationBridge;
   late _MockClock clock;
+  late _MockDeviceLocation deviceLocation;
 
   setUpAll(() async {
     await initializeDateFormatting('tr');
@@ -43,6 +47,7 @@ void main() {
     diyanetApi = _MockDiyanetApi();
     notificationBridge = _MockNotificationBridge();
     clock = _MockClock();
+    deviceLocation = _MockDeviceLocation();
 
     when(() => locationStore.load()).thenAnswer((_) async => null);
     when(
@@ -57,6 +62,7 @@ void main() {
       diyanetApi: diyanetApi,
       notificationBridge: notificationBridge,
       clock: clock,
+      deviceLocation: deviceLocation,
       routerConfig: routerConfig,
     );
   }
@@ -95,6 +101,7 @@ void main() {
           equals(notificationBridge),
         );
         expect(element.read<Clock>(), equals(clock));
+        expect(element.read<DeviceLocation>(), equals(deviceLocation));
       },
     );
 

@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vakit/location/cubit/location_picker_cubit.dart';
 import 'package:vakit/location/cubit/location_picker_state.dart';
+import 'package:vakit/location/repository/device_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/location/turkish_text.dart';
 import 'package:vakit/shared/diyanet/diyanet_api.dart';
@@ -31,6 +32,7 @@ class LocationPickerPage extends StatelessWidget {
         final cubit = LocationPickerCubit(
           api: context.read<DiyanetApi>(),
           locationStore: context.read<LocationStore>(),
+          deviceLocation: context.read<DeviceLocation>(),
         );
         unawaited(cubit.loadCities());
         return cubit;
@@ -80,6 +82,10 @@ class _LocationPickerViewState extends State<LocationPickerView> {
     } else {
       _pop(context);
     }
+  }
+
+  void _onLocateMe() {
+    unawaited(context.read<LocationPickerCubit>().locateMe());
   }
 
   @override
@@ -132,6 +138,50 @@ class _LocationPickerViewState extends State<LocationPickerView> {
               children: [
                 if (state.loading)
                   const LinearProgressIndicator(minHeight: AppSpacing.xs),
+                if (!isDistricts)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                      AppSpacing.lg,
+                      AppSpacing.xs,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FilledButton.tonalIcon(
+                                onPressed: state.locating ? null : _onLocateMe,
+                                icon: const Icon(Icons.my_location),
+                                label: const Text('Konumumu bul'),
+                              ),
+                            ),
+                            if (state.locating) ...[
+                              const SizedBox(width: AppSpacing.sm),
+                              const SizedBox(
+                                width: AppSpacing.lg,
+                                height: AppSpacing.lg,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          'İliniz ve ilçeniz otomatik bulunur. '
+                          'Koordinatlarınız hiçbir sunucuya gönderilmez.',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.lg,
