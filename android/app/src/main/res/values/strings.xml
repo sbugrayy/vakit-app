@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_name">Kalıcı vakit bildirimi</string>
+    <string name="notification_channel_description">Sıradaki vakti ve geri sayımı gösterir</string>
+    <string name="notification_expired_text">Vakit bilgisi güncel değil. Güncellemek için Vakit\'i açın.</string>
+</resources>
