@@ -8,8 +8,10 @@ import androidx.core.content.ContextCompat
 import com.sbugrayy.vakit.location.LocationMethodHandler
 import com.sbugrayy.vakit.notification.NotificationEngine
 import com.sbugrayy.vakit.notification.NotificationMethodHandler
+import com.sbugrayy.vakit.qibla.HeadingStreamHandler
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
@@ -32,6 +34,14 @@ class MainActivity : FlutterActivity() {
             LocationMethodHandler.CHANNEL_NAME
         )
         locationChannel.setMethodCallHandler(LocationMethodHandler(this))
+
+        val qiblaChannel = EventChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            HeadingStreamHandler.CHANNEL_NAME
+        )
+        qiblaChannel.setStreamHandler(
+            HeadingStreamHandler(applicationContext)
+        )
     }
 
     fun requestNotificationPermission(result: MethodChannel.Result) {
