@@ -80,7 +80,7 @@ fi
 
 echo
 echo "== 3) Statik analiz: flutter analyze --fatal-infos =="
-if ANALYZE_OUT=$(flutter analyze --fatal-infos 2>&1); then
+if ANALYZE_OUT=$(timeout 600 flutter analyze --fatal-infos 2>&1); then
   echo "OK: analiz temiz."
 else
   echo "$ANALYZE_OUT" | grep -E "^\s*(error|warning|info) " || echo "$ANALYZE_OUT"
@@ -159,7 +159,16 @@ else
       | sed -E "s#^lib/(.*)\$#import 'package:vakit/\1';#"
     echo "void main() {}"
   } > "$HELPER"
-  if ! flutter test --coverage; then
+  # --concurrency=1: Windows'ta --coverage ile eş zamanlı test dosyaları ara
+  # sıra asılı kalıyor (2026-10-03'te iki kez 10+ dk takıldı; tek iş
+  # parçacığıyla aynı takım ~20 sn'de geçti). timeout, takılırsa sonsuza dek
+  # beklemek yerine hata versin diye.
+  timeout 900 flutter test --coverage --concurrency=1
+  TEST_EXIT=$?
+  if [ "$TEST_EXIT" -eq 124 ]; then
+    echo "HATA: testler 15 dakikada bitmedi (asılı kalan test olabilir)."
+    FAIL=1
+  elif [ "$TEST_EXIT" -ne 0 ]; then
     echo "HATA: testler geçmedi."
     FAIL=1
   fi
