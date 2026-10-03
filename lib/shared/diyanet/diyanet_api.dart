@@ -6,20 +6,11 @@ import 'package:dio/dio.dart';
 import 'package:vakit/location/models/city.dart';
 import 'package:vakit/location/models/district.dart';
 import 'package:vakit/prayer_times/models/prayer_day.dart';
+import 'package:vakit/shared/diyanet/dev_certificate.dart';
 import 'package:vakit/shared/diyanet/diyanet_api_exception.dart';
 
 class DiyanetApi {
-  DiyanetApi({Dio? dio})
-    : _dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              baseUrl: 'https://ezanvakti.emushaf.net',
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 20),
-              responseType: ResponseType.plain,
-            ),
-          );
+  DiyanetApi({Dio? dio}) : _dio = dio ?? _createDefaultDio();
 
   static const turkeyCountryId = '2';
 
@@ -171,5 +162,18 @@ class DiyanetApi {
           message: e.message ?? 'Ağ hatası',
         );
     }
+  }
+
+  static Dio _createDefaultDio() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: 'https://ezanvakti.emushaf.net',
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 20),
+        responseType: ResponseType.plain,
+      ),
+    );
+    applyDevTrustedCertificate(dio);
+    return dio;
   }
 }
