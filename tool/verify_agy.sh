@@ -9,23 +9,29 @@
 #
 # Kullanım:
 #   tool/verify_agy.sh --allowed "lib/shared/ test/shared/" [--threshold 90]
-#                      [--skip-tests]
+#                      [--skip-tests] [--android]
 #
 #   --allowed     Bu görevde değişmesine izin verilen yol önekleri (boşlukla
 #                 ayrılmış). Dışındaki her değişiklik hata sayılır.
 #   --threshold   lib/ geneli satır kapsama eşiği, yüzde (varsayılan 90).
 #   --skip-tests  Testleri ve kapsamayı atla (yalnız hızlı kontrol).
+#   --android     Kotlin/Android işleri için ayrıca JVM testlerini
+#                 (:app:testDebugUnitTest) ve APK derlemesini (:app:assembleDebug)
+#                 Gradle --offline ile çalıştırır. Önbellekte olmayan bir şey
+#                 gerekirse saatlerce indirmek yerine hata verir.
 set -uo pipefail
 
 ALLOWED=""
 THRESHOLD=90
 SKIP_TESTS=0
+ANDROID=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --allowed) ALLOWED="$2"; shift 2 ;;
     --threshold) THRESHOLD="$2"; shift 2 ;;
     --skip-tests) SKIP_TESTS=1; shift ;;
+    --android) ANDROID=1; shift ;;
     -h|--help)
       grep '^#' "$0" | sed 's/^# \{0,1\}//'
       exit 0
@@ -208,6 +214,21 @@ else
     fi
 
     rm -f "$NORMALIZED"
+  fi
+fi
+
+if [ "$ANDROID" -eq 1 ]; then
+  echo
+  echo "== 7) Android: JVM testleri + APK derlemesi (gradlew --offline) =="
+  # Norton'un TLS taraması (bkz. CLAUDE.md "Bilinen Ortam Sorunları").
+  : "${GRADLE_OPTS:=-Djavax.net.ssl.trustStore=C:/Users/bugra/.gradle/cacerts-with-norton -Djavax.net.ssl.trustStorePassword=changeit}"
+  export GRADLE_OPTS
+  if (cd android && timeout 1800 ./gradlew --offline -q         :app:testDebugUnitTest :app:assembleDebug         -Ptarget-platform=android-x64); then
+    echo "OK: JVM testleri geçti, APK derlendi."
+  else
+    echo "HATA: Android JVM testleri ya da derleme başarısız."
+    echo "Rapor: android/../build/app/reports/tests/testDebugUnitTest/index.html"
+    FAIL=1
   fi
 fi
 
