@@ -7,11 +7,14 @@ data class CountdownDisplay(
 )
 
 object StatusCountdown {
-    const val MINUTE_WINDOW_MILLIS = 60L * 60_000L
-    private const val HOUR_MILLIS = 3_600_000L
+    const val MAX_MINUTES = 60
     private const val MINUTE_MILLIS = 60_000L
+    private const val HOUR_MILLIS = 3_600_000L
     private const val TICK_OFFSET_MILLIS = 1_000L
 
+    // Kalan süreyi Chronometer'ın saat ve dakika hanesiyle tutarlı olacak
+    // şekilde aşağı yuvarlar. Son 60 dakikada (kalan < 61 dk) dakika simgesi
+    // gösterilir (60..0). 1 saatin üzerinde saat özetlenir (>= 1).
     fun displayAt(nextEpochMillis: Long, nowMillis: Long): CountdownDisplay {
         val remaining = nextEpochMillis - nowMillis
         if (remaining <= 0L) {
@@ -22,11 +25,11 @@ object StatusCountdown {
             )
         }
 
-        if (remaining <= MINUTE_WINDOW_MILLIS) {
-            val minutesLeft = ((remaining + 59_999L) / MINUTE_MILLIS).toInt()
-            val nextTickAtMillis = if (minutesLeft > 1) {
+        if (remaining / MINUTE_MILLIS <= MAX_MINUTES) {
+            val minutesLeft = (remaining / MINUTE_MILLIS).toInt()
+            val nextTickAtMillis = if (minutesLeft > 0) {
                 nextEpochMillis -
-                    (minutesLeft - 1) * MINUTE_MILLIS +
+                    minutesLeft * MINUTE_MILLIS +
                     TICK_OFFSET_MILLIS
             } else {
                 null
@@ -40,7 +43,7 @@ object StatusCountdown {
 
         val hoursLeft = (remaining / HOUR_MILLIS).toInt()
         val nextTickAtMillis = nextEpochMillis -
-            hoursLeft * HOUR_MILLIS +
+            maxOf(hoursLeft * HOUR_MILLIS, (MAX_MINUTES + 1) * MINUTE_MILLIS) +
             TICK_OFFSET_MILLIS
         return CountdownDisplay(
             hoursLeft = hoursLeft,

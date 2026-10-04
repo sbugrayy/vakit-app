@@ -5,4 +5,5 @@
     <string name="notification_expired_text">Vakit bilgisi güncel değil. Güncellemek için Vakit\'i açın.</string>
     <string name="notification_hours_left">%1$d saat kaldı</string>
     <string name="notification_minutes_left">%1$d dakika kaldı</string>
+    <string name="notification_less_than_minute">1 dakikadan az kaldı</string>
 </resources>

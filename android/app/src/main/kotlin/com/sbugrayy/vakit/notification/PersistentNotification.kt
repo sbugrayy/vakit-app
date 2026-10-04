@@ -88,6 +88,9 @@ object PersistentNotification {
             (state.next.epochMillis - System.currentTimeMillis())
 
         val summaryText = when {
+            display?.minutesLeft == 0 -> context.getString(
+                R.string.notification_less_than_minute
+            )
             display?.minutesLeft != null -> context.getString(
                 R.string.notification_minutes_left,
                 display.minutesLeft
