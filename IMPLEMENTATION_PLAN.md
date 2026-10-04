@@ -24,6 +24,7 @@ yürüyor.
 | Bildirim | Tek özellik: canlı geri sayımlı kalıcı bildirim. Sesli uyarı, durum çubuğu dakika ikonu, aksiyon butonu yok | 2026-10-02 |
 | Bildirim (ek) | Buğra'nın isteğiyle eklendi (örnek Ezan Vakti Pro): "N saat kaldı" özeti ve vakte 60 dk kala durum çubuğunda dakika sayan cami simgesi, diğer zamanlarda hilal-yıldız. Yalnız kesin alarm izni varken; inexact alarm sayıyı ≥10 dk geciktirebilir | 2026-10-03 |
 | Dakika simgesi | Tek parça Osmanlı silüeti + Roboto Medium rakamlar, 0–60 için üretilmiş vektör kaynak (`tool/gen_status_icons.py`). Bitmap telefonda yumuşak görünüyordu. Kalan süre aşağı yuvarlanır (geri sayım ve Ezan Vakti gibi); son dakikada 0 | 2026-10-04 |
+| Logo | Koyu yeşil radyal zemin (#16935F → #07583B), sarı ay-yıldız (#FFC72C). Geometri durum çubuğundaki hilal-yıldızla aynı. Uyarlanabilir simge + temalı simge katmanı. Kaynak `design/logo/` | 2026-10-04 |
 | Tasarım | Google Stitch → `design/stitch/` | 2026-10-02 |
 | Vakit kaynağı | Diyanet verisi (`ezanvakti.emushaf.net`) + çevrimdışı yedek (`adhan`, Türkiye metodu) | 2026-10-02 |
 | agy | `gemini-3.8-flash-high`. Global izin dosyasında `command(...)` izinleri kaldırıldı, vakit-app'e yalnız `lib/`, `test/`, `android/app/src/` yazma izni | 2026-10-02 |
@@ -55,7 +56,6 @@ yürüyor.
    - WorkManager günlük yenileme.
    - AGP 9 / Gradle 9.1 geçişi.
 6. Faz 6:
-   - Uygulama ikonu (şu an Flutter'ın varsayılanı).
    - Release imzası.
    - `code-review` ve `security-review`.
    - PR `flutter-rewrite` → `main`.
@@ -162,7 +162,14 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 
 ### Faz 6 — Cila ve teslim
 
-- [ ] Uygulama ikonu ve adı ("Vakit")
+- [x] Uygulama adı "Vakit" (008b)
+- [x] Uygulama logosu, agy 021 (2026-10-04). Buğra'nın tarifi: yeşil zemin, sarı ay-yıldız; dört seçenekten "koyu yeşil, hafif ışık" seçildi
+  - Uyarlanabilir simge `mipmap-anydpi/ic_launcher.xml`: radyal yeşil zemin, ay-yıldız ön planı, Android 13+ temalı simge katmanı
+  - Ay-yıldız durum çubuğu simgesiyle aynı geometride, 66 dp güvenli alanın içinde
+  - Flutter'ın eski PNG'leri silindi
+  - Ana dosya ve Play Store simgesi: `design/logo/` (SVG + 512 px PNG)
+  - Emülatörde uygulama çekmecesinde doğrulandı
+  - Bildirim panelindeki uygulama simgesi güncelleme sonrası eski Flutter logosu olarak kaldı. Sistem arayüzünün önbelleği olduğu düşünülüyor; yeniden başlatmadan sonra bakılacak
 - [ ] Release imzası (keystore yolu ve parolalar env değişkeninden; repoya sır girmez)
 - [ ] README, `code-review` ve `security-review`
 - [ ] Gerçek telefonda uçtan uca deneme
