@@ -251,6 +251,10 @@ mobil uygulamaya gömülecek bir sır gerektirdiği için kullanılmıyor.
 - Görünüm `DecoratedCustomViewStyle` ile tema uyumlu RemoteViews:
   - Kapalıyken: ilçe, sıradaki vakit, geri sayım ve kalan süre özeti
     ("9 saat kaldı"; son saatte "12 dakika kaldı").
+  - Saat ve dakika **aşağı yuvarlanır**; yanındaki geri sayımın hanesiyle
+    ve Ezan Vakti ile aynı (kalan 44:52 → 44). Buğra 2026-10-04'te seçti.
+  - Dakika kipi kalan 61 dakikanın altında başlar: simge 60'tan sayar. Son
+    dakikada simge 0, özet "1 dakikadan az kaldı".
   - Açıkken: aynı satırlar, altında 6 vakit, sıradaki vurgulu.
 - Kanal `vakit_geri_sayim`: `IMPORTANCE_DEFAULT`; ses, titreşim ve ışık
   kapalı. Bildirim builder'da `setSilent` + `setOnlyAlertOnce`.
@@ -407,6 +411,11 @@ emülatörde/cihazda çalıştırma. Hiçbiri atlanmaz.
     `android/settings.gradle.kts`'te). İndirmesiz derleme ~3 dk. Sürüm
     değiştirmek büyük indirme demek.
   - Yüzlerce MB'lık bir indirme başlatmadan önce Buğra'ya sor.
+- **agy açılışta ağ hatası verebiliyor.** 2026-10-04'te koşu 0 sn'de
+  `status: ERROR` ile bitti, hiçbir dosya yazılmadı. stderr:
+  `Eligibility check failed: failed to get profile picture: … TLS handshake timeout`.
+  Bu bir izin reddi değil, ağ zaman aşımı. Aynı brifle yeniden çalıştırmak
+  yetti.
 - **`flutter build` ile `flutter test` aynı anda çalıştırılmaz.** 2026-10-03'te
   derleme, arkada `tool/verify_agy.sh` çalışırken Gradle iç hatasıyla düştü
   (`Cannot invoke "java.util.List.get(int)" because "path" is null`). Tek

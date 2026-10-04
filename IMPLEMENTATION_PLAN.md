@@ -23,6 +23,7 @@ yürüyor.
 | Platform | Flutter, yalnız Android. `com.sbugrayy.vakit`, minSdk 26 | 2026-10-02 |
 | Bildirim | Tek özellik: canlı geri sayımlı kalıcı bildirim. Sesli uyarı, durum çubuğu dakika ikonu, aksiyon butonu yok | 2026-10-02 |
 | Bildirim (ek) | Buğra'nın isteğiyle eklendi (örnek Ezan Vakti Pro): "N saat kaldı" özeti ve vakte 60 dk kala durum çubuğunda dakika sayan cami simgesi, diğer zamanlarda hilal-yıldız. Yalnız kesin alarm izni varken; inexact alarm sayıyı ≥10 dk geciktirebilir | 2026-10-03 |
+| Dakika simgesi | Tek parça Osmanlı silüeti + Roboto Medium rakamlar, 0–60 için üretilmiş vektör kaynak (`tool/gen_status_icons.py`). Bitmap telefonda yumuşak görünüyordu. Kalan süre aşağı yuvarlanır (geri sayım ve Ezan Vakti gibi); son dakikada 0 | 2026-10-04 |
 | Tasarım | Google Stitch → `design/stitch/` | 2026-10-02 |
 | Vakit kaynağı | Diyanet verisi (`ezanvakti.emushaf.net`) + çevrimdışı yedek (`adhan`, Türkiye metodu) | 2026-10-02 |
 | agy | `gemini-3.8-flash-high`. Global izin dosyasında `command(...)` izinleri kaldırıldı, vakit-app'e yalnız `lib/`, `test/`, `android/app/src/` yazma izni | 2026-10-02 |
@@ -47,7 +48,7 @@ yürüyor.
 ### Sıradaki adımlar (2026-10-03 akşamı itibarıyla)
 
 1. **Buğra:** `design/STITCH_PROMPTS.md` ile Stitch'te ekranları üretip `design/stitch/` altına koymak (Faz 1). Ekranlar şu an geçici tasarımla çalışıyor.
-2. **Gerçek telefonda deneme** — 2026-10-03 akşamı Buğra denedi: konum bulunuyor, kıble gösteriliyor, bildirimde canlı sayaç çalışıyor. İstediği eklemeler 018a–d'de yapıldı ve emülatörde doğrulandı (özet satırı, durum çubuğu simgeleri, yeniden başlatma). Telefonda bakılacak: yeni simgeler One UI durum çubuğunda görünüyor mu, "Alarmlar ve hatırlatıcılar" izni açık mı (kapalıysa özet ve dakika simgesi bilerek gösterilmez).
+2. **Gerçek telefonda deneme** — 2026-10-03 akşamı Buğra denedi: konum bulunuyor, kıble gösteriliyor, bildirimde canlı sayaç çalışıyor. İstediği eklemeler 018a–d'de yapıldı ve emülatörde doğrulandı (özet satırı, durum çubuğu simgeleri, yeniden başlatma). 2026-10-04: telefonda simge Ezan Vakti'ninkinin yanında kötü durdu; 019–020'de vektör simgeye ve aşağı yuvarlamaya geçildi. Telefonda bakılacak: yeni simge Ezan Vakti'ninkiyle yan yana nasıl duruyor, ikisi aynı dakikayı gösteriyor mu.
 3. Geokodlama başarısız olursa koordinatı saklayıp ili elle seçtirme (Faz 2 notu).
 4. Stitch gelince: Ana Sayfa ve Konum Seçimi'ni yeniden giydirme; Aylık Vakitler, Ayarlar ve İzinler ekranları; Kıble saati kartı.
 5. İnternet uygun olunca:
@@ -145,6 +146,10 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] agy 018b: durum çubuğu simgeleri. Hilal-yıldız; son 60 dakikada cami silüetinde kalan dakika (çalışma anında bitmap)
 - [x] agy 018c: kanal `vakit_geri_sayim` (`IMPORTANCE_DEFAULT`, sessiz). `IMPORTANCE_LOW` iken simge durum çubuğunda hiç görünmüyordu (`hideSilentStatusBar=true`)
 - [x] agy 018d: cami simgesinde rakam kutusu 13×8,5 → 14×12,5 birim; durum çubuğu boyutunda okunur
+- [x] 2026-10-04, telefonda Ezan Vakti'nin yanında simgemiz parçalı ve yumuşak göründü. Nedenleri: minare-gövde boşluğu, kubbe dikişi ve sistemin 24 dp bitmap'i küçültmesi
+  - Claude: `tool/gen_status_icons.py` + `tool/fonts/` (Roboto Medium, Apache 2.0). 61 üretilmiş vektör simge, tek parça silüet, evenOdd ile oyulmuş rakamlar
+  - agy 019: `MinuteIcons` kaynak seçimi; eski bitmap çizimi silindi
+- [x] agy 020: kalan süre aşağı yuvarlanıyor (Buğra seçti: geri sayım 44:52 iken simge 44, Ezan Vakti gibi). Simge 60'tan başlar, son dakikada 0 ve "1 dakikadan az kaldı"
 - [ ] WorkManager günlük yenileme: `work-runtime` önbellekte yok, indirme gerekiyor; ertelendi. Uygulama her açılışta tazeliyor, 30 gün bitince bildirim "uygulamayı açın" diyor
 
 ### Faz 5 — Kıble — KOD TAMAM, cihazda doğrulama bekliyor (2026-10-03)
@@ -192,6 +197,15 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 | Vakit geçişi 23:15: bildirim kendiliğinden "Yatsı 00:45"e geçti, simge hilal-yıldıza döndü, sonraki tik "1 saat → 60 dk" anına kuruldu | ✓ |
 | İki haneli: **60** → 23:17:01'de **59**, panelde "59 dakika kaldı" | ✓ (018d'nin büyük rakamlarıyla) |
 | **Yeniden başlatma** (`adb reboot`), uygulama açılmadan: bildirim, hilal-yıldız ve iki alarm (tik 23:38:01, vakit sınırı 05:38:01) geri geldi | ✓ BOOT_COMPLETED |
+
+## 5c. Vektör dakika simgesi ve aşağı yuvarlama (019–020, 2026-10-04, emülatör)
+
+| Adım | Sonuç |
+|---|---|
+| Gerçek veri, Balıkesir İkindi 16:18, saat 16:12: geri sayım 05:18, özet "5 dakika kaldı", simge **5** (yeni vektör, tek parça silüet) | ✓ |
+| 16:17: simge **0**, özet "1 dakikadan az kaldı"; son dakikada tik kurulmadı, yalnız vakit sınırı alarmı | ✓ |
+| 16:18: uygulama açılmadan "Akşam 18:55", "2 saat kaldı", hilal-yıldız; tik 16:55:01, vakit sınırı 18:55:01 | ✓ |
+| Sahte yük, kalan 61:12: hilal-yıldız, tik `next - 61 dk + 1 sn`. 13 sn sonra simge **60**, özet "60 dakika kaldı" | ✓ |
 
 Yol üstünde bulunup düzeltilenler:
 
