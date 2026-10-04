@@ -6,3 +6,6 @@
 
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# text=auto ikiliyi kendisi tanıyor; font yine de açıkça ikili (tool/fonts/).
+*.ttf binary

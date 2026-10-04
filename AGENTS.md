@@ -151,7 +151,11 @@ lib/<modul>/
   koyu panelde okunur olmalı.
 - Durum çubuğu simgesi tek renkli bir maskedir; sistem yalnız alfa kanalını
   kullanıp kendisi renklendirir. Vektör dolgusu `#FFFFFFFF` bu yüzden serbest.
-  Çalışma anında çizilen simgede (bitmap) Kotlin'de renk değeri yazılmaz.
+- Dakika simgeleri `res/drawable/ic_stat_minute_00.xml` … `_60.xml`
+  **üretilmiş** vektör kaynaklardır (`tool/gen_status_icons.py`, Claude
+  çalıştırır). Simgeyi çalışma anında bitmap olarak çizme. Kaynağı kimliğiyle
+  seç (`setSmallIcon(R.drawable.…)`); sistem vektörü durum çubuğunun piksel
+  boyutunda çizer, bitmap küçültülünce bulanıklaşıyordu.
 - Receiver'lar `android:exported="false"`. Yalnız sistem yayınlarını
   (`BOOT_COMPLETED`, `TIME_SET`, `TIMEZONE_CHANGED`, `MY_PACKAGE_REPLACED`)
   dinleyen receiver `exported="true"` olabilir ve özel action kabul etmez.
@@ -200,4 +204,7 @@ gibi doğrulanmamış iddialar yazma.
 - `design/stitch/`: Stitch dışa aktarımları, yalnız referans. Bozuk görünen
   klasör adlarını "düzeltme".
 - `test/fixtures/`: gerçek API yanıtları.
+- `android/app/src/main/res/drawable/ic_stat_minute_*.xml`: üretilmiş dakika
+  simgeleri. Tasarım değişikliği gerekiyorsa raporda iste; Claude betiği
+  değiştirip yeniden üretir.
 - Kural 3'teki bütün dosyalar.

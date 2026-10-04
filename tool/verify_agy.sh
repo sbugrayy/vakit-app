@@ -144,6 +144,16 @@ else
 fi
 
 echo
+echo "== 4b) Üretilmiş dakika simgeleri (tool/gen_status_icons.py --check) =="
+# ic_stat_minute_*.xml elle düzenlenmez; agy dokunduysa burada yakalanır.
+if python tool/gen_status_icons.py --check; then
+  :
+else
+  echo "HATA: dakika simgeleri betiğin ürettiğiyle aynı değil."
+  FAIL=1
+fi
+
+echo
 if [ "$SKIP_TESTS" -eq 1 ]; then
   echo "== 5) Testler ve kapsama ATLANDI (--skip-tests) =="
 elif [ -z "$(find test -name '*_test.dart' 2>/dev/null | head -1)" ]; then

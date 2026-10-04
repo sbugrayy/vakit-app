@@ -50,6 +50,13 @@ Kurallar:
 - **Claude uygulama kodunu elle yazmaz ve düzeltmez**, tek satırlık düzeltme
   dahil. Yalnız mekanik araç çalıştırır (`dart format`). `flutter analyze` ya da
   test hatası olursa hata çıktısını brife ekleyip agy'yi yeniden çalıştırır.
+- Üretilmiş dosyalar istisnadır; agy bunlara dokunmaz, Claude kendi aracıyla
+  üretir:
+  - `test/fixtures/`: gerçek API yanıtları, `curl` ile.
+  - `ic_stat_minute_*.xml`: `tool/gen_status_icons.py` ile.
+
+  Bu `flutter create` gibi mekanik bir çıktıdır, elle yazılmış uygulama kodu
+  sayılmaz.
 - **agy hiçbir terminal komutu çalıştırmaz**; sadece dosya okur ve yazar.
   Medium yazısındaki ders: komut izinleri headless modda çalışmıyor ve agy'nin
   komut çalıştırması tehlikeli.
@@ -254,8 +261,18 @@ mobil uygulamaya gömülecek bir sır gerektirdiği için kullanılmıyor.
     yükseltilemiyor, yeni kimlik şart.
 - Durum çubuğu simgesi:
   - Vakte 60 dakikadan fazla varken hilal-yıldız (`ic_stat_vakit`).
-  - Son 60 dakikada cami silüeti, içinde kalan dakika. Simge çalışma anında
-    bitmap olarak çizilir, rakamlar silüetten oyulur.
+  - Son 60 dakikada cami silüeti, içinde kalan dakika. Her dakika için ayrı
+    vektör kaynak var: `ic_stat_minute_00.xml` … `_60.xml`.
+  - Bu kaynaklar **üretilmiş**. Üreten betik `tool/gen_status_icons.py`;
+    tek parça silüet, Roboto Medium rakamları (`tool/fonts/`, Apache 2.0) ve
+    `evenOdd` ile oyma kullanıyor. Tasarım betikte değişir, ardından
+    `python tool/gen_status_icons.py --preview .agy/onizleme/x.png` çalıştırılır.
+    `verify_agy.sh` dosyaların elle değişmediğini `--check` ile denetler.
+    Gereken Python paketleri: fontTools, shapely; önizleme için Pillow, numpy.
+  - Neden bitmap değil: 2026-10-04'te telefonda ilk sürüm (çalışma anında
+    24 dp bitmap) Ezan Vakti'nin simgesinin yanında yumuşak ve parçalı
+    görünüyordu. Sistem bitmap'i ~14 dp'ye küçültüyor; vektörü ise o boyutta
+    yeniden çiziyor.
 - Geri sayım RemoteViews içindeki countdown `Chronometer` ile işler. Eski
   uygulamadaki `while(true)` coroutine yaklaşımı yasak.
 - Alarmlar tek seferliktir. Boot, saat ya da saat dilimi değişimi ve paket
