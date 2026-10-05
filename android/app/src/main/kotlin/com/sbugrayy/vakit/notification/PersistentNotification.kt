@@ -18,8 +18,8 @@ import com.sbugrayy.vakit.R
 
 object PersistentNotification {
     const val NOTIFICATION_ID = 1001
-    const val CHANNEL_ID = "vakit_geri_sayim"
-    private const val LEGACY_CHANNEL_ID = "vakit_kalici"
+    const val CHANNEL_ID = "vakit_sayac"
+    private val LEGACY_CHANNEL_IDS = listOf("vakit_kalici", "vakit_geri_sayim")
     private const val CONTENT_REQUEST_CODE = 1003
 
     private val NAME_IDS = intArrayOf(
@@ -95,10 +95,21 @@ object PersistentNotification {
                 R.string.notification_minutes_left,
                 display.minutesLeft
             )
-            display?.hoursLeft != null -> context.getString(
-                R.string.notification_hours_left,
-                display.hoursLeft
-            )
+            display?.hoursLeft != null -> {
+                val minutesPart = display.minutesPart
+                if (minutesPart != null && minutesPart in 1..59) {
+                    context.getString(
+                        R.string.notification_hours_minutes_left,
+                        display.hoursLeft,
+                        minutesPart
+                    )
+                } else {
+                    context.getString(
+                        R.string.notification_hours_left,
+                        display.hoursLeft
+                    )
+                }
+            }
             else -> null
         }
 
@@ -178,7 +189,10 @@ object PersistentNotification {
             .setShowWhen(false)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
+            // NotificationCompat sessiz bildirimi uyarı yapmayan gruba koyar;
+            // yüksek önemde açılır uyarı (heads-up) bu yüzden çıkmaz.
             .setSilent(true)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setContentIntent(contentIntent)
 
@@ -230,15 +244,16 @@ object PersistentNotification {
                 Context.NOTIFICATION_SERVICE
             ) as? NotificationManager ?: return
 
-            // Düşük önem (IMPORTANCE_LOW) "sessiz" sayılır ve sessiz bildirimin
-            // simgesi durum çubuğunda gizlenebilir (hideSilentStatusBar=true).
-            // Kanal önemi sonradan kodla yükseltilemediği için yeni kimliğe
-            // geçildi. Eski kanal kullanıcı ayarlarında kalmasın diye silinir.
-            val legacyChannel = notificationManager
-                .getNotificationChannel(LEGACY_CHANNEL_ID)
-            if (legacyChannel != null) {
-                notificationManager
-                    .deleteNotificationChannel(LEGACY_CHANNEL_ID)
+            // Neden HIGH: Aynı önemdeki bildirimler zamana göre sıralanıyor,
+            // sonradan gelen bildirim bizimkinin üstüne çıkıyordu (emülatörde
+            // ölçüldü, 2026-10-05).
+            // Neden yeni kimlik: Önem sonradan kodla yükseltilemediği için
+            // yeni kimliğe ("vakit_sayac") geçildi. Eski kanallar kullanıcı
+            // ayarlarında kalmasın diye silinir.
+            for (legacyChannelId in LEGACY_CHANNEL_IDS) {
+                if (notificationManager.getNotificationChannel(legacyChannelId) != null) {
+                    notificationManager.deleteNotificationChannel(legacyChannelId)
+                }
             }
 
             val currentChannel = notificationManager
@@ -253,7 +268,7 @@ object PersistentNotification {
                 val channel = NotificationChannel(
                     CHANNEL_ID,
                     name,
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_HIGH
                 ).apply {
                     description = descriptionText
                     setShowBadge(false)

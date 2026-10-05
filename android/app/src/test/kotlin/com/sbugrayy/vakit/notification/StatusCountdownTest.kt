@@ -19,8 +19,9 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertEquals(9, display.hoursLeft)
+        assertEquals(0, display.minutesPart)
         assertNull(display.minutesLeft)
-        assertEquals(next - 9 * 3_600_000L + 1_000L, display.nextTickAtMillis)
+        assertEquals(next - 540 * 60_000L + 1_000L, display.nextTickAtMillis)
     }
 
     @Test
@@ -29,8 +30,20 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertEquals(8, display.hoursLeft)
+        assertEquals(59, display.minutesPart)
         assertNull(display.minutesLeft)
-        assertEquals(next - 8 * 3_600_000L + 1_000L, display.nextTickAtMillis)
+        assertEquals(next - 539 * 60_000L + 1_000L, display.nextTickAtMillis)
+    }
+
+    @Test
+    fun displayAtOneHourFiftyTwoMinutesThirtySecondsRemaining() {
+        val now = next - (1 * 3_600_000L + 52 * 60_000L + 30_000L)
+        val display = StatusCountdown.displayAt(next, now)
+
+        assertEquals(1, display.hoursLeft)
+        assertEquals(52, display.minutesPart)
+        assertNull(display.minutesLeft)
+        assertEquals(next - 112 * 60_000L + 1_000L, display.nextTickAtMillis)
     }
 
     @Test
@@ -39,8 +52,9 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertEquals(1, display.hoursLeft)
+        assertEquals(30, display.minutesPart)
         assertNull(display.minutesLeft)
-        assertEquals(next - 61 * 60_000L + 1_000L, display.nextTickAtMillis)
+        assertEquals(next - 90 * 60_000L + 1_000L, display.nextTickAtMillis)
     }
 
     @Test
@@ -49,6 +63,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertEquals(1, display.hoursLeft)
+        assertEquals(1, display.minutesPart)
         assertNull(display.minutesLeft)
         assertEquals(next - 61 * 60_000L + 1_000L, display.nextTickAtMillis)
     }
@@ -59,6 +74,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertEquals(60, display.minutesLeft)
         assertEquals(next - 60 * 60_000L + 1_000L, display.nextTickAtMillis)
     }
@@ -69,6 +85,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertEquals(60, display.minutesLeft)
         assertEquals(next - 60 * 60_000L + 1_000L, display.nextTickAtMillis)
     }
@@ -79,6 +96,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertEquals(59, display.minutesLeft)
         assertEquals(next - 59 * 60_000L + 1_000L, display.nextTickAtMillis)
     }
@@ -89,6 +107,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertEquals(44, display.minutesLeft)
         assertEquals(next - 44 * 60_000L + 1_000L, display.nextTickAtMillis)
     }
@@ -99,6 +118,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertEquals(1, display.minutesLeft)
         assertEquals(next - 60_000L + 1_000L, display.nextTickAtMillis)
     }
@@ -109,6 +129,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertEquals(0, display.minutesLeft)
         assertNull(display.nextTickAtMillis)
     }
@@ -119,6 +140,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertEquals(0, display.minutesLeft)
         assertNull(display.nextTickAtMillis)
     }
@@ -129,6 +151,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertNull(display.minutesLeft)
         assertNull(display.nextTickAtMillis)
     }
@@ -139,6 +162,7 @@ class StatusCountdownTest {
         val display = StatusCountdown.displayAt(next, now)
 
         assertNull(display.hoursLeft)
+        assertNull(display.minutesPart)
         assertNull(display.minutesLeft)
         assertNull(display.nextTickAtMillis)
     }
@@ -158,17 +182,25 @@ class StatusCountdownTest {
             now = tick
         }
 
-        assertEquals(64, displays.size)
+        assertEquals(181, displays.size)
 
-        val expectedHours = listOf(3, 2, 1)
-        val actualHours = displays.take(3).map { it.hoursLeft }
-        assertEquals(expectedHours, actualHours)
-        assertTrue(displays.take(3).all { it.minutesLeft == null })
+        val expectedHourPairs = (180 downTo 61).map { total ->
+            Pair(total / 60, total % 60)
+        }
+        val actualHourPairs = displays.take(120).map {
+            Pair(it.hoursLeft, it.minutesPart)
+        }
+        assertEquals(expectedHourPairs, actualHourPairs)
+        assertTrue(displays.take(120).all { it.minutesLeft == null })
 
         val expectedMinutes = (60 downTo 0).toList()
-        val actualMinutes = displays.drop(3).map { it.minutesLeft }
+        val actualMinutes = displays.drop(120).map { it.minutesLeft }
         assertEquals(expectedMinutes, actualMinutes)
-        assertTrue(displays.drop(3).all { it.hoursLeft == null })
+        assertTrue(
+            displays.drop(120).all {
+                it.hoursLeft == null && it.minutesPart == null
+            }
+        )
 
         assertNull(displays.last().nextTickAtMillis)
     }
