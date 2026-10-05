@@ -176,6 +176,27 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [ ] Gerçek telefonda uçtan uca deneme
 - [ ] PR: `flutter-rewrite` → `main`
 
+### iOS — ERTELENDİ (2026-10-05, Buğra'nın kararı)
+
+Amaç: uygulamayı başka birinin iPhone'unda kullanmak. Buğra'nın Mac'i ve
+Apple Developer hesabı yok. Konuşulan yol:
+
+- **Derleme:** GitHub Actions macOS makinesinde imzasız `.ipa`. Depo açık
+  olduğu için ücretsiz.
+- **Kurulum:** Windows'ta Sideloadly ya da AltStore ile ücretsiz Apple ID
+  imzası.
+  - 7 günde bir yeniden imzalamak gerekir.
+  - Apple ID'yi telefonun sahibi girer; Claude kimlik bilgisi görmez.
+- **Kod:** Proje yalnız Android için kuruldu, `ios/` yok. Konum, kıble ve
+  bildirim Kotlin kanallarına bağlı.
+  - Konum ve kıble için Swift karşılıkları gerekir.
+  - Durum çubuğu simgesi iOS'ta mümkün değil. Kalıcı bildirimin karşılığı
+    Live Activity (kilit ekranı, Dynamic Island).
+- **Onaylanan:** agy'ye yalnız `ios/Runner/` için yazma izni verilecek. Henüz
+  verilmedi; iOS işine başlarken `~/.gemini/antigravity-cli/settings.json`'a
+  eklenir.
+- **Önerilen ilk aşama:** vakitler, konum ve kıble. Live Activity sonra.
+
 ## 5a. Uçtan uca sonuçlar (2026-10-03, Pixel_8 emülatörü, Android 37)
 
 | Adım | Sonuç |
