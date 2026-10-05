@@ -58,8 +58,10 @@ SHOULDER_X, SHOULDER_Y = 5.6, 7.6  # merkezden yatay uzaklık, y
 SHOULDER_END_Y, SHOULDER_POW = 10.5, 0.55
 ALEM_W, ALEM_TOP_Y = 0.75, 1.2
 
-# Rakam kutusu: gövdenin içi, minarelerin arası.
-DIGIT_BOX = (3.75, 11.6, 20.25, 23.1)
+# Rakam kutusu: gövdenin içi, minarelerin arası. 2026-10-05'te 0,8 birim
+# yukarı alındı (Buğra: rakamlar tabana çok yakındı). Alt boşluk 0,75 →
+# 1,55 birim; rakamın üstü kubbe tabanına değmeden gövde üstünde kalıyor.
+DIGIT_BOX = (3.75, 10.8, 20.25, 22.3)
 
 # Görünüm alanı birimi başına 1/100 hassasiyet yeterli: 24 birim telefonda
 # ~39 px, yani 0,01 birim ~0,02 px.
