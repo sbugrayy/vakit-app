@@ -250,14 +250,23 @@ mobil uygulamaya gömülecek bir sır gerektirdiği için kullanılmıyor.
   Dart'a ihtiyaç duymadan çalışır.
 - Görünüm `DecoratedCustomViewStyle` ile tema uyumlu RemoteViews:
   - Kapalıyken: ilçe, sıradaki vakit, geri sayım ve kalan süre özeti
-    ("9 saat kaldı"; son saatte "12 dakika kaldı").
+    ("1 saat 52 dk kaldı", tam saatte "2 saat kaldı"; son saatte
+    "12 dakika kaldı").
   - Saat ve dakika **aşağı yuvarlanır**; yanındaki geri sayımın hanesiyle
     ve Ezan Vakti ile aynı (kalan 44:52 → 44). Buğra 2026-10-04'te seçti.
   - Dakika kipi kalan 61 dakikanın altında başlar: simge 60'tan sayar. Son
     dakikada simge 0, özet "1 dakikadan az kaldı".
   - Açıkken: aynı satırlar, altında 6 vakit, sıradaki vurgulu.
-- Kanal `vakit_geri_sayim`: `IMPORTANCE_DEFAULT`; ses, titreşim ve ışık
-  kapalı. Bildirim builder'da `setSilent` + `setOnlyAlertOnce`.
+- Kanal `vakit_sayac`: `IMPORTANCE_HIGH`; ses, titreşim ve ışık kapalı.
+  Bildirim builder'da `setSilent` + `setOnlyAlertOnce` + `PRIORITY_MAX`.
+  Sessiz olduğu için yüksek önemde açılır uyarı (heads-up) çıkmıyor
+  (emülatörde doğrulandı).
+  - Neden HIGH (2026-10-05): eşit önemdeki bildirimler zamana göre
+    sıralanıyor; sonradan gelen bildirim bizimkinin üstüne çıkıp onu
+    daraltıyordu. Sesli bir bildirim yine de ~10 sn en üstte kalır
+    (Android'in "yeni uyardı" kuralı), sonra bizimki üste döner.
+  - Kanal geçmişi: `vakit_kalici` (LOW) → `vakit_geri_sayim` (DEFAULT) →
+    `vakit_sayac` (HIGH). Eskiler kodda siliniyor.
   - `IMPORTANCE_LOW` "sessiz" sayılır. Pixel'de varsayılan
     `hideSilentStatusBar=true` ve sessiz bildirimin simgesi durum çubuğunda
     gösterilmez; 2026-10-03'te emülatörde ölçüldü.
@@ -282,9 +291,9 @@ mobil uygulamaya gömülecek bir sır gerektirdiği için kullanılmıyor.
 - Alarmlar tek seferliktir. Boot, saat ya da saat dilimi değişimi ve paket
   güncellemesinde yeniden kurulur. İki tür var:
   - **Vakit sınırı**: exact, `RTC_WAKEUP`.
-  - **Görünüm tiki**: özetin ya da simgenin değişeceği an. Saat sınırlarında
-    ve son 60 dakikada dakikada bir kurulur. `RTC` olduğu için cihazı
-    uyandırmaz, ekran açılınca teslim edilir.
+  - **Görünüm tiki**: özetin ya da simgenin değişeceği an, yani her dakika
+    sınırı (özet "N saat M dk" olduğu için saat kipinde de). `RTC` olduğu
+    için cihazı uyandırmaz, ekran açılınca teslim edilir.
   - Tik `setExactAndAllowWhileIdle` ile kurulur. Bu bayraklı alarmlar uygulama
     bekleme kovası kotasından muaf; bayraksız `setExact` "working set"
     kovasında saatte ~10 alarma kısılıyor.

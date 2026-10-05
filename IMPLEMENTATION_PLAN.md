@@ -149,6 +149,7 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] 2026-10-04, telefonda Ezan Vakti'nin yanında simgemiz parçalı ve yumuşak göründü. Nedenleri: minare-gövde boşluğu, kubbe dikişi ve sistemin 24 dp bitmap'i küçültmesi
   - Claude: `tool/gen_status_icons.py` + `tool/fonts/` (Roboto Medium, Apache 2.0). 61 üretilmiş vektör simge, tek parça silüet, evenOdd ile oyulmuş rakamlar
   - agy 019: `MinuteIcons` kaynak seçimi; eski bitmap çizimi silindi
+- [x] agy 022 (2026-10-05, Buğra'nın isteği): özet saat kipinde de dakikalı ("1 saat 52 dk kaldı"), tik her dakika. Kanal `vakit_sayac` IMPORTANCE_HIGH + PRIORITY_MAX: sonradan gelen bildirim artık üste geçmiyor (sesli olan ~10 sn üstte kalıp geri iniyor); açılır uyarı çıkmıyor. Emülatörde doğrulandı
 - [x] agy 020: kalan süre aşağı yuvarlanıyor (Buğra seçti: geri sayım 44:52 iken simge 44, Ezan Vakti gibi). Simge 60'tan başlar, son dakikada 0 ve "1 dakikadan az kaldı"
 - [ ] WorkManager günlük yenileme: `work-runtime` önbellekte yok, indirme gerekiyor; ertelendi. Uygulama her açılışta tazeliyor, 30 gün bitince bildirim "uygulamayı açın" diyor
 
