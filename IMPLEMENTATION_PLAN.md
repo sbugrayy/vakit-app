@@ -53,7 +53,7 @@ Sesli uyarı **olmayacak** (Buğra, 2026-10-06; ilk karar da böyleydi).
 1. [x] Yayın sürümü imzası ve release APK
 2. [x] Günlük veri yenileme (WorkManager, native Diyanet çekimi), agy 023
 3. [x] Ayarlar ekranı (bildirim aç/kapa, tema, konum, veri kaynağı), agy 024a/b
-4. [ ] Aylık Vakitler ekranı
+4. [x] Aylık Vakitler ekranı, agy 025/025b
 5. [ ] Kıble saati kartı
 6. [ ] Konum yedeği (geokodlama başarısızsa koordinatı sakla, ili elle seçtir)
 7. [ ] `code-review` + `security-review`, bulguların düzeltilmesi
@@ -137,7 +137,7 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] agy 010a: uygulama kabuğu, go_router, Türkçe yerel, `main()` başlatma sırası, saat biçimleme (cihaz saat diliminden bağımsız)
 - [x] agy 010b: Ana Sayfa + `PrayerTimesCubit`. Sıradaki vakit, canlı geri sayım, ilerleme, Miladi + Hicri tarih, 6 vakit, rozetler; ilk açılışta bildirim izni
 - [x] agy 010c: Konum Seçimi (elle il → ilçe, Türkçe katlamalı arama, merkez ilçe başta)
-- [ ] Aylık Vakitler (30 gün)
+- [x] Aylık Vakitler (agy 025/025b, 2026-10-06): bugünden itibaren ~30 gün, bugün vurgulu, Hicri tarih, çevrimdışı notu; Ana Sayfa'da vakit listesinin altında bağlantı. Emülatörde açık/koyu doğrulandı
 - [x] Ayarlar (agy 024a/024b, 2026-10-06): kalıcı bildirim aç/kapa, tema (sistem/açık/koyu), konum, veri kaynağı bilgisi
   - Hata düzeltildi: Ana Sayfa her açılışta bildirimi yeniden açıyordu.
   - Emülatörde: kapatınca bildirim ve alarmlar kalktı, soğuk açılışta kapalı kaldı, açınca geri geldi; koyu tema bütün uygulamaya uygulandı.

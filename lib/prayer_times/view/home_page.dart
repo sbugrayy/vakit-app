@@ -333,6 +333,12 @@ class _LoadedView extends StatelessWidget {
               _buildDateRow(context, displayDay),
               const SizedBox(height: AppSpacing.sm),
               _buildPrayersList(context, state, displayDay),
+              const SizedBox(height: AppSpacing.sm),
+              TextButton.icon(
+                onPressed: () => unawaited(context.push('/aylik')),
+                icon: const Icon(Icons.calendar_month_outlined),
+                label: const Text('Aylık Vakitler'),
+              ),
             ],
           ],
         ),

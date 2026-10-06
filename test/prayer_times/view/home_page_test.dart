@@ -276,6 +276,7 @@ void main() {
           expect(find.text('İkindi'), findsOneWidget);
           expect(find.text('Akşam'), findsOneWidget);
           expect(find.text('Yatsı'), findsOneWidget);
+          expect(find.text('Aylık Vakitler'), findsOneWidget);
 
           expect(tester.takeException(), isNull);
 
@@ -393,6 +394,56 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         verify(() => mockCubit.load()).called(1);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'Loaded: Aylık Vakitler düğmesine tıklandığında /aylik rotasına gider',
+      (tester) async {
+        configure360dp(tester);
+
+        final status = PrayerSchedule(days).statusAt(clock.now());
+        final loadedState = PrayerTimesLoaded(
+          location: istanbul,
+          result: PrayerTimesResult(
+            days: days,
+            source: PrayerDataSource.diyanet,
+          ),
+          status: status,
+        );
+        when(() => mockCubit.state).thenReturn(loadedState);
+
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => BlocProvider<PrayerTimesCubit>.value(
+                value: mockCubit,
+                child: const HomeView(),
+              ),
+            ),
+            GoRoute(
+              path: '/aylik',
+              builder: (context, state) => const Scaffold(
+                body: Text('Aylık Vakitler Sayfası'),
+              ),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pump();
+
+        expect(find.text('Aylık Vakitler'), findsOneWidget);
+        expect(find.byIcon(Icons.calendar_month_outlined), findsOneWidget);
+
+        await tester.tap(find.text('Aylık Vakitler'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(find.text('Aylık Vakitler Sayfası'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );

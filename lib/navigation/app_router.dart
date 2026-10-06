@@ -3,6 +3,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:vakit/location/view/location_picker_page.dart';
 import 'package:vakit/prayer_times/view/home_page.dart';
+import 'package:vakit/prayer_times/view/monthly_page.dart';
 import 'package:vakit/qibla/view/qibla_page.dart';
 import 'package:vakit/settings/view/settings_page.dart';
 
@@ -27,6 +28,10 @@ GoRouter createAppRouter({String initialLocation = '/'}) {
       GoRoute(
         path: '/ayarlar',
         builder: (context, state) => const SettingsPage(),
+      ),
+      GoRoute(
+        path: '/aylik',
+        builder: (context, state) => const MonthlyPage(),
       ),
     ],
   );

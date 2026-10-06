@@ -13,6 +13,7 @@ import 'package:vakit/navigation/app_router.dart';
 import 'package:vakit/notifications/repository/notification_bridge.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
 import 'package:vakit/prayer_times/view/home_page.dart';
+import 'package:vakit/prayer_times/view/monthly_page.dart';
 import 'package:vakit/qibla/repository/heading_source.dart';
 import 'package:vakit/settings/models/app_settings.dart';
 import 'package:vakit/settings/repository/settings_store.dart';
@@ -186,16 +187,33 @@ void main() {
 
     test('createAppRouter kök rotasını ve başlangıç konumunu ayarlar', () {
       final router = createAppRouter();
-      expect(router.configuration.routes.length, equals(4));
+      expect(router.configuration.routes.length, equals(5));
       final routes = router.configuration.routes.cast<GoRoute>().toList();
       expect(routes[0].path, equals('/'));
       expect(routes[1].path, equals('/konum'));
       expect(routes[2].path, equals('/kible'));
       expect(routes[3].path, equals('/ayarlar'));
+      expect(routes[4].path, equals('/aylik'));
       expect(
         router.routeInformationProvider.value.uri.path,
         equals('/'),
       );
     });
+
+    testWidgets(
+      '/aylik rotası açıldığında MonthlyPage gösterilir',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final router = createAppRouter(initialLocation: '/aylik');
+        await tester.pumpWidget(buildTestApp(routerConfig: router));
+        await tester.pump();
+
+        expect(find.byType(MonthlyPage), findsOneWidget);
+      },
+    );
   });
 }
