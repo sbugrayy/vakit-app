@@ -186,11 +186,12 @@ void main() {
 
     test('createAppRouter kök rotasını ve başlangıç konumunu ayarlar', () {
       final router = createAppRouter();
-      expect(router.configuration.routes.length, equals(3));
+      expect(router.configuration.routes.length, equals(4));
       final routes = router.configuration.routes.cast<GoRoute>().toList();
       expect(routes[0].path, equals('/'));
       expect(routes[1].path, equals('/konum'));
       expect(routes[2].path, equals('/kible'));
+      expect(routes[3].path, equals('/ayarlar'));
       expect(
         router.routeInformationProvider.value.uri.path,
         equals('/'),

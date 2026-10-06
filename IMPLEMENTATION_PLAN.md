@@ -52,7 +52,7 @@ Sesli uyarı **olmayacak** (Buğra, 2026-10-06; ilk karar da böyleydi).
 
 1. [x] Yayın sürümü imzası ve release APK
 2. [x] Günlük veri yenileme (WorkManager, native Diyanet çekimi), agy 023
-3. [ ] Ayarlar ekranı (bildirim aç/kapa, tema, konum, veri kaynağı)
+3. [x] Ayarlar ekranı (bildirim aç/kapa, tema, konum, veri kaynağı), agy 024a/b
 4. [ ] Aylık Vakitler ekranı
 5. [ ] Kıble saati kartı
 6. [ ] Konum yedeği (geokodlama başarısızsa koordinatı sakla, ili elle seçtir)
@@ -138,7 +138,9 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] agy 010b: Ana Sayfa + `PrayerTimesCubit`. Sıradaki vakit, canlı geri sayım, ilerleme, Miladi + Hicri tarih, 6 vakit, rozetler; ilk açılışta bildirim izni
 - [x] agy 010c: Konum Seçimi (elle il → ilçe, Türkçe katlamalı arama, merkez ilçe başta)
 - [ ] Aylık Vakitler (30 gün)
-- [ ] Ayarlar (kalıcı bildirim aç/kapa, tema, konum, veri kaynağı bilgisi)
+- [x] Ayarlar (agy 024a/024b, 2026-10-06): kalıcı bildirim aç/kapa, tema (sistem/açık/koyu), konum, veri kaynağı bilgisi
+  - Hata düzeltildi: Ana Sayfa her açılışta bildirimi yeniden açıyordu.
+  - Emülatörde: kapatınca bildirim ve alarmlar kalktı, soğuk açılışta kapalı kaldı, açınca geri geldi; koyu tema bütün uygulamaya uygulandı.
 - [x] agy 017: geçici çözüm olarak Ana Sayfa'da kesin alarm uyarı bandı ve "İzin ver". Uygulama öne gelince durum tazeleniyor
 - [ ] İzinler ekranı (Stitch). "Alarmlar ve hatırlatıcılar" izni istenmezse vakit geçişi ~39 dk gecikebilir (emülatörde ölçüldü); şimdilik 017'deki bant bunu karşılıyor
 - [ ] Stitch tasarımlarıyla yeniden giydirme (Faz 1'e bağlı)

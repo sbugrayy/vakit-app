@@ -146,3 +146,19 @@ Aynı test içinde `when(() => cubit.state).thenReturn(...)` ile ikinci durumu
 verip yeniden `pumpWidget` etmek `BlocBuilder`'ı güncellemez; akıştan olay
 gelmez. Ayrı `testWidgets` yaz ya da
 `whenListen(cubit, Stream.fromIterable([...]), initialState: ...)` kullan.
+
+## 16. mocktail `any()` için fallback değeri
+
+`when(() => mock.f(any()))` ya da `verify(... any())` kullanılan bir
+parametre tipi enum, Equatable model gibi kendi tipimizse, mocktail
+`registerFallbackValue` ister. Yoksa test çalışırken "Bad state: ... registerFallbackValue
+was not previously called" ile düşer; analiz bunu yakalamaz.
+
+- 024a'da `AppSettings`, 024b'de `ThemePreference` için iki kez çıktı.
+- `main` içinde `setUpAll(() { registerFallbackValue(const AppSettings()); registerFallbackValue(ThemePreference.system); });`
+- Brif, mock'lanan metodun parametre tiplerini yazmalı ve bu satırı hatırlatmalı.
+
+## 17. Rota ya da sağlayıcı ekleyince eski testler
+
+`app_router.dart`'a rota eklemek, rota sayısını sayan `test/app/app_test.dart`
+gibi testleri kırar. Brif, etkilenen testleri de dokunulacak dosyalara yazmalı.

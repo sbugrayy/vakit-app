@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vakit/location/view/location_picker_page.dart';
 import 'package:vakit/prayer_times/view/home_page.dart';
 import 'package:vakit/qibla/view/qibla_page.dart';
+import 'package:vakit/settings/view/settings_page.dart';
 
 final GoRouter appRouter = createAppRouter();
 
@@ -22,6 +23,10 @@ GoRouter createAppRouter({String initialLocation = '/'}) {
       GoRoute(
         path: '/kible',
         builder: (context, state) => const QiblaPage(),
+      ),
+      GoRoute(
+        path: '/ayarlar',
+        builder: (context, state) => const SettingsPage(),
       ),
     ],
   );

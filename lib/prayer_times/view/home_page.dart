@@ -91,6 +91,13 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _handleOpenSettings() async {
+    await context.push('/ayarlar');
+    if (mounted) {
+      await context.read<PrayerTimesCubit>().load();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PrayerTimesCubit, PrayerTimesState>(
@@ -120,6 +127,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
           PrayerTimesLoaded() => _LoadedView(
             state: state,
             onSelectLocation: _handleSelectLocation,
+            onOpenSettings: _handleOpenSettings,
           ),
         };
       },
@@ -230,10 +238,12 @@ class _LoadedView extends StatelessWidget {
   const _LoadedView({
     required this.state,
     required this.onSelectLocation,
+    required this.onOpenSettings,
   });
 
   final PrayerTimesLoaded state;
   final VoidCallback onSelectLocation;
+  final VoidCallback onOpenSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -293,6 +303,11 @@ class _LoadedView extends StatelessWidget {
             icon: const Icon(Icons.location_on_outlined),
             tooltip: 'Konum seç',
             onPressed: onSelectLocation,
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Ayarlar',
+            onPressed: onOpenSettings,
           ),
         ],
       ),

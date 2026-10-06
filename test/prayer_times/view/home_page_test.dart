@@ -280,6 +280,7 @@ void main() {
           expect(tester.takeException(), isNull);
 
           expect(find.byTooltip('Kıble'), findsOneWidget);
+          expect(find.byTooltip('Ayarlar'), findsOneWidget);
 
           await tester.tap(find.byTooltip('Yenile'));
           await tester.pump();
@@ -337,6 +338,61 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(find.text('Kıble Sayfası'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'Loaded: Ayarlar eylemine tıklandığında /ayarlar rotasına gider '
+      've dönüşte load tekrar çağrılır',
+      (tester) async {
+        configure360dp(tester);
+
+        final status = PrayerSchedule(days).statusAt(clock.now());
+        final loadedState = PrayerTimesLoaded(
+          location: istanbul,
+          result: PrayerTimesResult(
+            days: days,
+            source: PrayerDataSource.diyanet,
+          ),
+          status: status,
+        );
+        when(() => mockCubit.state).thenReturn(loadedState);
+
+        final router = GoRouter(
+          initialLocation: '/',
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => BlocProvider<PrayerTimesCubit>.value(
+                value: mockCubit,
+                child: const HomeView(),
+              ),
+            ),
+            GoRoute(
+              path: '/ayarlar',
+              builder: (context, state) => const Scaffold(
+                body: Text('Ayarlar Sayfası'),
+              ),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+        await tester.pump();
+
+        expect(find.byTooltip('Ayarlar'), findsOneWidget);
+        await tester.tap(find.byTooltip('Ayarlar'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(find.text('Ayarlar Sayfası'), findsOneWidget);
+
+        router.pop();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        verify(() => mockCubit.load()).called(1);
         expect(tester.takeException(), isNull);
       },
     );
