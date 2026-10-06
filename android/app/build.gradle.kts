@@ -75,6 +75,12 @@ dependencies {
     // kaymasını önlüyor. Sürüm makinenin önbelleğinde (indirme yok).
     implementation("androidx.core:core:1.13.1")
 
+    // Günlük vakit yenilemesi (uygulama hiç açılmasa da bildirim verisi
+    // güncel kalsın). Ağ koşulu, yeniden deneme ve yeniden başlatmadan sonra
+    // kalıcılık WorkManager'da hazır. Coroutine'siz `work-runtime`: Worker
+    // zaten arka plan iş parçacığında çalışıyor.
+    implementation("androidx.work:work-runtime:2.10.0")
+
     // Bildirim motorunun saf Kotlin mantığı için JVM testleri
     // (./gradlew :app:testDebugUnitTest). org.json Android'de platformun
     // parçası, JVM testlerinde ise yok; gerçek uygulaması gerekiyor. İki
