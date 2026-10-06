@@ -103,11 +103,13 @@ void main() {
       final payloadStr = NotificationBridge.buildPayload(
         locationLabel: 'İstanbul',
         days: twoDays,
+        districtId: '9541',
       );
 
       final payload = jsonDecode(payloadStr) as Map<String, dynamic>;
 
       expect(payload['locationLabel'], equals('İstanbul'));
+      expect(payload['districtId'], equals('9541'));
       expect(payload['utcOffsetMinutes'], equals(180));
 
       final days = payload['days'] as List<dynamic>;
@@ -169,10 +171,12 @@ void main() {
         final payloadStr = NotificationBridge.buildPayload(
           locationLabel: 'Ankara',
           days: const [],
+          districtId: '9158',
         );
 
         final payload = jsonDecode(payloadStr) as Map<String, dynamic>;
         expect(payload['locationLabel'], equals('Ankara'));
+        expect(payload['districtId'], equals('9158'));
         expect(payload['utcOffsetMinutes'], equals(0));
         expect(payload['days'], isEmpty);
       },
@@ -229,6 +233,7 @@ void main() {
         locationLabel: 'İstanbul',
         days: allDays.take(1).toList(),
         enabled: true,
+        districtId: '9541',
       );
 
       expect(recordedCall, isNotNull);
@@ -240,6 +245,7 @@ void main() {
       final payload =
           jsonDecode(args['payload'] as String) as Map<String, dynamic>;
       expect(payload['locationLabel'], equals('İstanbul'));
+      expect(payload['districtId'], equals('9541'));
     });
 
     test('setEnabled doğru metot ve argümanla çağrılır', () async {
@@ -374,6 +380,7 @@ void main() {
           locationLabel: 'İstanbul',
           days: const [],
           enabled: true,
+          districtId: '9541',
         ),
         completes,
       );
@@ -421,6 +428,7 @@ void main() {
           locationLabel: 'İstanbul',
           days: const [],
           enabled: true,
+          districtId: '9541',
         ),
         throwsA(
           isA<PlatformException>().having(

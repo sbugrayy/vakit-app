@@ -54,6 +54,7 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
           locationLabel: location.districtName,
           days: result.days,
           enabled: true,
+          districtId: location.districtId,
         );
       } on PlatformException {
         // Bildirim senkronizasyon hatası yutulur; ana ekranı bozmasın.

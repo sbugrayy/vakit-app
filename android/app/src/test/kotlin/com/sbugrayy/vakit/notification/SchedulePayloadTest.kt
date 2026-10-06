@@ -2,6 +2,7 @@ package com.sbugrayy.vakit.notification
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Test
 
@@ -105,5 +106,25 @@ class SchedulePayloadTest {
             }
         """.trimIndent()
         SchedulePayload.parse(json)
+    }
+
+    @Test
+    fun roundTripWithDistrictId() {
+        val payload = SchedulePayload(
+            locationLabel = "İstanbul",
+            utcOffsetMinutes = 180,
+            days = SchedulePayload.parse(validJson).days,
+            districtId = "9541"
+        )
+        val json = payload.toJson()
+        val parsedAgain = SchedulePayload.parse(json)
+        assertEquals(payload, parsedAgain)
+        assertEquals("9541", parsedAgain.districtId)
+    }
+
+    @Test
+    fun legacyPayloadWithoutDistrictIdHasNull() {
+        val payload = SchedulePayload.parse(validJson)
+        assertNull(payload.districtId)
     }
 }

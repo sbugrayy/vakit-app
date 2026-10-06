@@ -18,12 +18,16 @@ data class ScheduleDay(
 data class SchedulePayload(
     val locationLabel: String,
     val utcOffsetMinutes: Int,
-    val days: List<ScheduleDay>
+    val days: List<ScheduleDay>,
+    val districtId: String? = null
 ) {
     fun toJson(): String {
         val root = JSONObject()
         root.put("locationLabel", locationLabel)
         root.put("utcOffsetMinutes", utcOffsetMinutes)
+        if (districtId != null) {
+            root.put("districtId", districtId)
+        }
 
         val daysArray = JSONArray()
         for (day in days) {
@@ -61,6 +65,12 @@ data class SchedulePayload(
 
                 val locationLabel = root.getString("locationLabel")
                 val utcOffsetMinutes = root.getInt("utcOffsetMinutes")
+                val districtId = if (root.has("districtId") && !root.isNull("districtId")) {
+                    val value = root.get("districtId")
+                    if (value is String) value else null
+                } else {
+                    null
+                }
                 val daysArray = root.getJSONArray("days")
                 val days = ArrayList<ScheduleDay>(daysArray.length())
 
@@ -101,7 +111,12 @@ data class SchedulePayload(
                     days.add(ScheduleDay(date, times))
                 }
 
-                return SchedulePayload(locationLabel, utcOffsetMinutes, days)
+                return SchedulePayload(
+                    locationLabel,
+                    utcOffsetMinutes,
+                    days,
+                    districtId
+                )
             } catch (e: JSONException) {
                 throw IllegalArgumentException(
                     "JSON parsing failed: ${e.message}",

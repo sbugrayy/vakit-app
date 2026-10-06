@@ -10,6 +10,8 @@ object NotificationEngine {
         store.savePayload(payloadJson)
         store.enabled = enabled
         refresh(context)
+        // KEEP politikası mükerrer iş kurmayı engeller, her sync'te güvenle çağrılır.
+        DailyRefreshWorker.schedule(context)
     }
 
     fun setEnabled(context: Context, enabled: Boolean) {

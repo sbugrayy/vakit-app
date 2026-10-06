@@ -51,9 +51,11 @@ class NotificationBridge {
   static String buildPayload({
     required String locationLabel,
     required List<PrayerDay> days,
+    required String districtId,
   }) {
     final payload = <String, dynamic>{
       'locationLabel': locationLabel,
+      'districtId': districtId,
       'utcOffsetMinutes': days.isEmpty ? 0 : days.first.utcOffset.inMinutes,
       'days': days
           .map(
@@ -87,10 +89,12 @@ class NotificationBridge {
     required String locationLabel,
     required List<PrayerDay> days,
     required bool enabled,
+    required String districtId,
   }) async {
     final payload = buildPayload(
       locationLabel: locationLabel,
       days: days,
+      districtId: districtId,
     );
     try {
       await _channel.invokeMethod<void>(

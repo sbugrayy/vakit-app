@@ -51,7 +51,7 @@ yürüyor.
 Sesli uyarı **olmayacak** (Buğra, 2026-10-06; ilk karar da böyleydi).
 
 1. [x] Yayın sürümü imzası ve release APK
-2. [ ] Günlük veri yenileme (WorkManager, native Diyanet çekimi)
+2. [x] Günlük veri yenileme (WorkManager, native Diyanet çekimi), agy 023
 3. [ ] Ayarlar ekranı (bildirim aç/kapa, tema, konum, veri kaynağı)
 4. [ ] Aylık Vakitler ekranı
 5. [ ] Kıble saati kartı
@@ -166,7 +166,11 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
   - agy 019: `MinuteIcons` kaynak seçimi; eski bitmap çizimi silindi
 - [x] agy 022 (2026-10-05, Buğra'nın isteği): özet saat kipinde de dakikalı ("1 saat 52 dk kaldı"), tik her dakika. Kanal `vakit_sayac` IMPORTANCE_HIGH + PRIORITY_MAX: sonradan gelen bildirim artık üste geçmiyor (sesli olan ~10 sn üstte kalıp geri iniyor); açılır uyarı çıkmıyor. Emülatörde doğrulandı
 - [x] agy 020: kalan süre aşağı yuvarlanıyor (Buğra seçti: geri sayım 44:52 iken simge 44, Ezan Vakti gibi). Simge 60'tan başlar, son dakikada 0 ve "1 dakikadan az kaldı"
-- [ ] WorkManager günlük yenileme: `work-runtime` önbellekte yok, indirme gerekiyor; ertelendi. Uygulama her açılışta tazeliyor, 30 gün bitince bildirim "uygulamayı açın" diyor
+- [x] WorkManager günlük yenileme (agy 023, 2026-10-06). `work-runtime` 2.10.0
+  - Yüke `districtId` eklendi.
+  - Native taraf her gün (ağ koşuluyla) Diyanet'ten ilçenin vakitlerini çekip yükü ve bildirimi tazeliyor; Flutter gerekmiyor.
+  - Emülatörde: `pm clear` + konum seçimi → iş hemen çalıştı (SUCCESS), yük Kotlin'in yazdığı alan sırasıyla 32 gün (01.10–01.11), bugünün vakitleri Diyanet'le birebir.
+  - Not: WorkManager periyodik işi zorla tetiklemeye izin vermiyor ("executed before schedule"); test ilk çalıştırmayla yapılır.
 
 ### Faz 5 — Kıble — KOD TAMAM, cihazda doğrulama bekliyor (2026-10-03)
 

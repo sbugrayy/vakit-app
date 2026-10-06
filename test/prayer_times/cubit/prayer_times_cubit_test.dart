@@ -174,6 +174,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
       },
@@ -202,6 +203,7 @@ void main() {
             locationLabel: 'İSTANBUL',
             days: days,
             enabled: true,
+            districtId: '9541',
           ),
         ).called(1);
       },
@@ -219,6 +221,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenThrow(PlatformException(code: 'UNAVAILABLE'));
       },
@@ -273,6 +276,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
       },
@@ -304,6 +308,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
       },
@@ -346,6 +351,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
 
@@ -412,6 +418,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -455,6 +462,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -491,6 +499,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -567,6 +576,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
         when(
@@ -642,6 +652,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
 
@@ -680,6 +691,7 @@ void main() {
             locationLabel: any(named: 'locationLabel'),
             days: any(named: 'days'),
             enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
           ),
         ).thenAnswer((_) async {});
         when(() => notificationBridge.status()).thenAnswer(
