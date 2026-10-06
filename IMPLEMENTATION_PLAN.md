@@ -55,7 +55,7 @@ Sesli uyarı **olmayacak** (Buğra, 2026-10-06; ilk karar da böyleydi).
 3. [x] Ayarlar ekranı (bildirim aç/kapa, tema, konum, veri kaynağı), agy 024a/b
 4. [x] Aylık Vakitler ekranı, agy 025/025b
 5. [x] Kıble saati kartı, agy 026/026b
-6. [ ] Konum yedeği (geokodlama başarısızsa koordinatı sakla, ili elle seçtir)
+6. [x] Konum yedeği (geokodlama başarısızsa koordinatı sakla, ili elle seçtir), agy 027/027b/027c
 7. [ ] `code-review` + `security-review`, bulguların düzeltilmesi
 8. [ ] PR `flutter-rewrite` → `main` (birleştirme Buğra'ya sorulur)
 
@@ -126,7 +126,9 @@ uygun olduğunda ayrı bir iş (Faz 6'da).
 - [x] agy 007a/b: `KeyValueStore`, `SelectedLocation`, önbellekli vakit deposu (Diyanet → önbellek → çevrimdışı)
 - [x] agy 013/014: GPS ile konum, paket indirmeden native kanal `com.sbugrayy.vakit/konum` ile (Android `LocationManager` + `Geocoder`; Play Services gerekmez) + "Konumumu bul" akışı (izin → konum → ters geokod → Diyanet eşleme → koordinatlı kayıt)
 - [x] **Emülatörde ters geokodlama çalışmıyor**: Norton, Play Services'in geokodlama trafiğini de kesiyor (`GmsGeocoder: reverse geocoding network failure`, "Trust anchor not found"). Uygulama hatayı doğru yakalayıp "listeden seçin" diyor. Gerçek telefonda çalışıyor (Buğra, 2026-10-03)
-- [ ] İyileştirme önerisi: geokodlama başarısız olursa alınan koordinatı sakla, ili elle seçtir; kıble ve çevrimdışı hesap yine çalışır. Google servisleri olmayan telefonlarda (Huawei) da gerekli
+- [x] Konum yedeği (agy 027/027b/027c, 2026-10-06): "Konumumu bul" ili bulamazsa koordinat saklanıyor, il/ilçe elle seçilince konum o koordinatla kaydediliyor; kıble çalışıyor
+  - Ayrıca bulundu ve düzeltildi: hata mesajı il listesinin yerini alıyordu; artık liste doluysa mesaj üstte bant olarak görünüyor.
+  - Emülatörde: internet kapalıyken "Konumumu bul" → bant + liste → Ankara elle → Kıble 160°, 2.162 km.
 
 ### Faz 3 — Ekranlar — GEÇİCİ TASARIMLA ÇALIŞIYOR; Stitch bekleniyor
 

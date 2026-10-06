@@ -429,6 +429,7 @@ void main() {
     });
 
     test('LocationPickerState copyWith ve props dogru calisir', () {
+      const point = GeoPoint(latitude: 41.01, longitude: 28.97);
       const state = LocationPickerState();
       final updated = state.copyWith(
         step: LocationPickerStep.districts,
@@ -439,6 +440,7 @@ void main() {
         loading: true,
         locating: true,
         errorMessage: 'hata',
+        pendingPoint: point,
         saved: true,
       );
       expect(updated.step, LocationPickerStep.districts);
@@ -449,15 +451,18 @@ void main() {
       expect(updated.loading, isTrue);
       expect(updated.locating, isTrue);
       expect(updated.errorMessage, 'hata');
+      expect(updated.pendingPoint, point);
       expect(updated.saved, isTrue);
-      expect(updated.props.length, 9);
+      expect(updated.props.length, 10);
 
       final cleared = updated.copyWith(
         clearSelectedCity: true,
         clearErrorMessage: true,
+        clearPendingPoint: true,
       );
       expect(cleared.selectedCity, isNull);
       expect(cleared.errorMessage, isNull);
+      expect(cleared.pendingPoint, isNull);
     });
   });
 
@@ -576,6 +581,7 @@ void main() {
         );
         expect(cubit.state.locating, isFalse);
         expect(cubit.state.saved, isFalse);
+        expect(cubit.state.pendingPoint, isNull);
         verifyNever(() => deviceLocation.currentLocation());
         await cubit.close();
       },
@@ -596,6 +602,7 @@ void main() {
           'Konum izni verilmedi. İlinizi listeden seçebilirsiniz.',
         );
         expect(cubit.state.locating, isFalse);
+        expect(cubit.state.pendingPoint, isNull);
         await cubit.close();
       },
     );
@@ -619,6 +626,7 @@ void main() {
         );
         expect(cubit.state.locating, isFalse);
         expect(cubit.state.saved, isFalse);
+        expect(cubit.state.pendingPoint, isNull);
         verifyNever(() => deviceLocation.reverseGeocode(any()));
         await cubit.close();
       },
@@ -642,7 +650,12 @@ void main() {
 
         expect(
           cubit.state.errorMessage,
-          'Konumunuzun ili bulunamadı. İlinizi listeden seçin.',
+          'İliniz otomatik bulunamadı. Listeden seçin; '
+          'konumunuz kıble için saklanacak.',
+        );
+        expect(
+          cubit.state.pendingPoint,
+          const GeoPoint(latitude: 41.01, longitude: 28.97),
         );
         expect(cubit.state.locating, isFalse);
         expect(cubit.state.saved, isFalse);
@@ -669,7 +682,12 @@ void main() {
 
         expect(
           cubit.state.errorMessage,
-          'Konumunuzun ili bulunamadı. İlinizi listeden seçin.',
+          'İliniz otomatik bulunamadı. Listeden seçin; '
+          'konumunuz kıble için saklanacak.',
+        );
+        expect(
+          cubit.state.pendingPoint,
+          const GeoPoint(latitude: 41.01, longitude: 28.97),
         );
         expect(cubit.state.locating, isFalse);
         verifyNever(api.fetchCities);
@@ -696,7 +714,12 @@ void main() {
 
         expect(
           cubit.state.errorMessage,
-          'Bulunduğunuz il Diyanet listesinde bulunamadı. Listeden seçin.',
+          'İliniz otomatik bulunamadı. Listeden seçin; '
+          'konumunuz kıble için saklanacak.',
+        );
+        expect(
+          cubit.state.pendingPoint,
+          const GeoPoint(latitude: 50, longitude: 10),
         );
         expect(cubit.state.locating, isFalse);
         expect(cubit.state.saved, isFalse);
@@ -734,7 +757,12 @@ void main() {
 
         expect(
           cubit.state.errorMessage,
-          'Bulunduğunuz il Diyanet listesinde bulunamadı. Listeden seçin.',
+          'İliniz otomatik bulunamadı. Listeden seçin; '
+          'konumunuz kıble için saklanacak.',
+        );
+        expect(
+          cubit.state.pendingPoint,
+          const GeoPoint(latitude: 41.01, longitude: 28.97),
         );
         expect(cubit.state.locating, isFalse);
         expect(cubit.state.saved, isFalse);
@@ -801,7 +829,12 @@ void main() {
 
         expect(
           cubit.state.errorMessage,
-          'İller alınamadı. İnternet bağlantınızı kontrol edin.',
+          'İliniz otomatik bulunamadı. Listeden seçin; '
+          'konumunuz kıble için saklanacak.',
+        );
+        expect(
+          cubit.state.pendingPoint,
+          const GeoPoint(latitude: 41.01, longitude: 28.97),
         );
         expect(cubit.state.locating, isFalse);
         await cubit.close();
@@ -835,7 +868,12 @@ void main() {
 
         expect(
           cubit.state.errorMessage,
-          'İlçeler alınamadı. İnternet bağlantınızı kontrol edin.',
+          'İliniz otomatik bulunamadı. Listeden seçin; '
+          'konumunuz kıble için saklanacak.',
+        );
+        expect(
+          cubit.state.pendingPoint,
+          const GeoPoint(latitude: 41.01, longitude: 28.97),
         );
         expect(cubit.state.locating, isFalse);
         await cubit.close();
@@ -873,6 +911,91 @@ void main() {
           'Konum kaydedilemedi. İnternet bağlantınızı kontrol edin.',
         );
         expect(cubit.state.locating, isFalse);
+        await cubit.close();
+      },
+    );
+
+    test(
+      'reverseGeocode istisna fırlatınca pendingPoint saklanır; ardından '
+      'selectCity ve selectDistrict o koordinatla kaydeder ve pendingPoint '
+      'temizlenir',
+      () async {
+        const point = GeoPoint(latitude: 41.01, longitude: 28.97);
+        when(
+          () => deviceLocation.requestPermission(),
+        ).thenAnswer((_) async => true);
+        when(() => deviceLocation.currentLocation()).thenAnswer(
+          (_) async => point,
+        );
+        when(() => deviceLocation.reverseGeocode(any())).thenThrow(
+          const DeviceLocationException(DeviceLocationError.unavailable),
+        );
+        when(
+          () => api.fetchDistricts('539'),
+        ).thenAnswer((_) async => istanbulDistrictsFixture);
+        when(() => locationStore.save(any())).thenAnswer((_) async {});
+
+        final cubit = buildCubit();
+        await cubit.locateMe();
+
+        expect(
+          cubit.state.errorMessage,
+          'İliniz otomatik bulunamadı. Listeden seçin; '
+          'konumunuz kıble için saklanacak.',
+        );
+        expect(cubit.state.pendingPoint, point);
+
+        await cubit.selectCity(istanbulCity);
+        expect(cubit.state.pendingPoint, point);
+
+        final basaksehir = istanbulDistrictsFixture.firstWhere(
+          (d) => d.name == 'BAŞAKŞEHİR',
+        );
+        await cubit.selectDistrict(basaksehir);
+
+        verify(
+          () => locationStore.save(
+            const SelectedLocation(
+              cityId: '539',
+              cityName: 'İstanbul',
+              districtId: '17866',
+              districtName: 'Başakşehir',
+              latitude: 41.01,
+              longitude: 28.97,
+            ),
+          ),
+        ).called(1);
+
+        expect(cubit.state.saved, isTrue);
+        expect(cubit.state.pendingPoint, isNull);
+        await cubit.close();
+      },
+    );
+
+    test(
+      'yeni locateMe denemesinde önceki pendingPoint temizlenir',
+      () async {
+        const point = GeoPoint(latitude: 41.01, longitude: 28.97);
+        when(
+          () => deviceLocation.requestPermission(),
+        ).thenAnswer((_) async => true);
+        when(() => deviceLocation.currentLocation()).thenAnswer(
+          (_) async => point,
+        );
+        when(() => deviceLocation.reverseGeocode(any())).thenThrow(
+          const DeviceLocationException(DeviceLocationError.unavailable),
+        );
+
+        final cubit = buildCubit();
+        await cubit.locateMe();
+        expect(cubit.state.pendingPoint, point);
+
+        when(
+          () => deviceLocation.requestPermission(),
+        ).thenAnswer((_) async => false);
+
+        await cubit.locateMe();
+        expect(cubit.state.pendingPoint, isNull);
         await cubit.close();
       },
     );

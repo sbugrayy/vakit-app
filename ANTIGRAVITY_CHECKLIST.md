@@ -162,3 +162,20 @@ was not previously called" ile düşer; analiz bunu yakalamaz.
 
 `app_router.dart`'a rota eklemek, rota sayısını sayan `test/app/app_test.dart`
 gibi testleri kırar. Brif, etkilenen testleri de dokunulacak dosyalara yazmalı.
+
+## 18. Testte tema değişiminin animasyonu
+
+Aynı testte `MaterialApp`'i açık sonra koyu temayla yeniden pump edip
+`Theme`'den gelen bir rengi karşılaştırmak, `AnimatedTheme` geçişi (~200 ms)
+yüzünden ara rengi okur (027'de açık temanın rengi geldi). Renk karşılaştırmadan
+önce `pump(const Duration(milliseconds: 300))` ya da her tema için ayrı
+`testWidgets`.
+
+## 19. Aramak için komut denemesi
+
+agy kodda bir şey aramak için terminal komutu deneyebiliyor (027c:
+`Select-String -Path "lib\**\*.dart"`). İzin dosyası reddediyor ve koşu
+**hiçbir dosya yazmadan** bitiyor. Doğrulama "geçer", çünkü değişiklik yoktur.
+`agy_rapor.py` çıktısında "KOMUT DENEMESİ" ve "agy'nin yazdığı dosyalar: (yok)"
+satırlarına bakılmadan teslimat kabul edilmez. Brifte okunacak dosyaları tam
+yol ile ver ve "arama için de komut kullanma" de.

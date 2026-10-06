@@ -10,6 +10,8 @@ import 'package:vakit/location/cubit/location_picker_cubit.dart';
 import 'package:vakit/location/cubit/location_picker_state.dart';
 import 'package:vakit/location/models/city.dart';
 import 'package:vakit/location/models/district.dart';
+import 'package:vakit/location/models/geo_point.dart';
+import 'package:vakit/location/models/selected_location.dart';
 import 'package:vakit/location/repository/device_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
 import 'package:vakit/location/view/location_picker_page.dart';
@@ -39,6 +41,15 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const City(id: '0', name: 'fallback'));
     registerFallbackValue(const District(id: '0', name: 'fallback'));
+    registerFallbackValue(const GeoPoint(latitude: 0, longitude: 0));
+    registerFallbackValue(
+      const SelectedLocation(
+        cityId: 'fallback',
+        cityName: 'fallback',
+        districtId: 'fallback',
+        districtName: 'fallback',
+      ),
+    );
   });
 
   setUp(() {
@@ -139,6 +150,46 @@ void main() {
           await tester.pump();
 
           verify(() => mockCubit.locateMe()).called(1);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'pendingPoint doluyken yeni bilgi metni ve primary renk görünür '
+      '(açık ve koyu tema, 360 dp)',
+      (tester) async {
+        configure360dp(tester);
+
+        const state = LocationPickerState(
+          cities: [adanaCity, istanbulCity],
+          pendingPoint: GeoPoint(latitude: 41.01, longitude: 28.97),
+        );
+
+        const expectedText =
+            'Konumunuz alındı. İl ve ilçenizi seçtiğinizde kıble için '
+            'kullanılacak.';
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(state: state, brightness: brightness),
+          );
+          await tester.pump(const Duration(milliseconds: 300));
+
+          expect(find.text(expectedText), findsOneWidget);
+          expect(
+            find.text(
+              'İliniz ve ilçeniz otomatik bulunur. '
+              'Koordinatlarınız hiçbir sunucuya gönderilmez.',
+            ),
+            findsNothing,
+          );
+
+          final textWidget = tester.widget<Text>(find.text(expectedText));
+          final theme = brightness == Brightness.dark
+              ? AppTheme.dark()
+              : AppTheme.light();
+          expect(textWidget.style?.color, theme.colorScheme.primary);
           expect(tester.takeException(), isNull);
         }
       },
@@ -286,6 +337,110 @@ void main() {
           await tester.pump();
 
           verify(() => mockCubit.selectCity(istanbulCity)).called(1);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'İl listesi doluyken errorMessage varsa hata bandı ve iller '
+      'görünür; Tekrar dene görünmez ve ile dokununca selectCity '
+      'çağrılır (açık ve koyu tema, 360 dp)',
+      (tester) async {
+        configure360dp(tester);
+
+        const errorMessage =
+            'İliniz otomatik bulunamadı. Listeden seçin; konumunuz '
+            'kıble için saklanacak.';
+        const state = LocationPickerState(
+          cities: [adanaCity, istanbulCity],
+          errorMessage: errorMessage,
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(state: state, brightness: brightness),
+          );
+          await tester.pump(const Duration(milliseconds: 300));
+
+          expect(find.text(errorMessage), findsOneWidget);
+          expect(find.text('Adana'), findsOneWidget);
+          expect(find.text('İstanbul'), findsOneWidget);
+          expect(find.text('Tekrar dene'), findsNothing);
+          expect(find.byIcon(Icons.info_outline), findsOneWidget);
+
+          final theme = brightness == Brightness.dark
+              ? AppTheme.dark()
+              : AppTheme.light();
+          final card = tester.widget<Card>(find.byType(Card));
+          expect(card.color, theme.colorScheme.errorContainer);
+
+          final icon = tester.widget<Icon>(
+            find.byIcon(Icons.info_outline),
+          );
+          expect(icon.color, theme.colorScheme.onErrorContainer);
+
+          final text = tester.widget<Text>(find.text(errorMessage));
+          expect(text.style?.color, theme.colorScheme.onErrorContainer);
+          expect(tester.takeException(), isNull);
+
+          await tester.tap(find.text('Adana'));
+          await tester.pump();
+
+          verify(() => mockCubit.selectCity(adanaCity)).called(1);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'İlçe adımında ilçeler doluyken errorMessage varsa hata bandı ve '
+      'ilçeler görünür; Tekrar dene görünmez ve ilçeye dokununca '
+      'selectDistrict çağrılır (açık ve koyu tema, 360 dp)',
+      (tester) async {
+        configure360dp(tester);
+
+        const errorMessage = 'İlçe bilgisi alınamadı.';
+        const state = LocationPickerState(
+          step: LocationPickerStep.districts,
+          selectedCity: istanbulCity,
+          districts: [istanbulDistrict, basaksehirDistrict],
+          errorMessage: errorMessage,
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(state: state, brightness: brightness),
+          );
+          await tester.pump(const Duration(milliseconds: 300));
+
+          expect(find.text(errorMessage), findsOneWidget);
+          expect(find.text('İstanbul (merkez)'), findsOneWidget);
+          expect(find.text('Başakşehir'), findsOneWidget);
+          expect(find.text('Tekrar dene'), findsNothing);
+          expect(find.byIcon(Icons.info_outline), findsOneWidget);
+
+          final theme = brightness == Brightness.dark
+              ? AppTheme.dark()
+              : AppTheme.light();
+          final card = tester.widget<Card>(find.byType(Card));
+          expect(card.color, theme.colorScheme.errorContainer);
+
+          final icon = tester.widget<Icon>(
+            find.byIcon(Icons.info_outline),
+          );
+          expect(icon.color, theme.colorScheme.onErrorContainer);
+
+          final text = tester.widget<Text>(find.text(errorMessage));
+          expect(text.style?.color, theme.colorScheme.onErrorContainer);
+          expect(tester.takeException(), isNull);
+
+          await tester.tap(find.text('Başakşehir'));
+          await tester.pump();
+
+          verify(
+            () => mockCubit.selectDistrict(basaksehirDistrict),
+          ).called(1);
           expect(tester.takeException(), isNull);
         }
       },

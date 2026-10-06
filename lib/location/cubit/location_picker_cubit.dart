@@ -124,12 +124,15 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
     final isCenter = isCenterDistrict(district);
     final cityName = displayName(city.name);
     final districtName = isCenter ? cityName : displayName(district.name);
+    final pendingPoint = state.pendingPoint;
 
     final selectedLocation = SelectedLocation(
       cityId: city.id,
       cityName: cityName,
       districtId: district.id,
       districtName: districtName,
+      latitude: pendingPoint?.latitude,
+      longitude: pendingPoint?.longitude,
     );
 
     try {
@@ -137,7 +140,7 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
       if (isClosed) {
         return;
       }
-      emit(state.copyWith(saved: true));
+      emit(state.copyWith(saved: true, clearPendingPoint: true));
     } on Exception {
       if (isClosed) {
         return;
@@ -155,7 +158,13 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
     if (state.locating) {
       return;
     }
-    emit(state.copyWith(locating: true, clearErrorMessage: true));
+    emit(
+      state.copyWith(
+        locating: true,
+        clearErrorMessage: true,
+        clearPendingPoint: true,
+      ),
+    );
 
     final bool granted;
     try {
@@ -169,6 +178,7 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
           locating: false,
           errorMessage:
               'Konum izni verilmedi. İlinizi listeden seçebilirsiniz.',
+          clearPendingPoint: true,
         ),
       );
       return;
@@ -182,6 +192,7 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
           locating: false,
           errorMessage:
               'Konum izni verilmedi. İlinizi listeden seçebilirsiniz.',
+          clearPendingPoint: true,
         ),
       );
       return;
@@ -198,6 +209,7 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
         state.copyWith(
           locating: false,
           errorMessage: 'Konumunuz alınamadı. İlinizi listeden seçin.',
+          clearPendingPoint: true,
         ),
       );
       return;
@@ -205,6 +217,10 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
     if (isClosed) {
       return;
     }
+
+    const fallbackErrorMessage =
+        'İliniz otomatik bulunamadı. Listeden seçin; '
+        'konumunuz kıble için saklanacak.';
 
     final GeocodedPlace place;
     try {
@@ -216,7 +232,8 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
       emit(
         state.copyWith(
           locating: false,
-          errorMessage: 'Konumunuzun ili bulunamadı. İlinizi listeden seçin.',
+          errorMessage: fallbackErrorMessage,
+          pendingPoint: point,
         ),
       );
       return;
@@ -230,7 +247,8 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
       emit(
         state.copyWith(
           locating: false,
-          errorMessage: 'Konumunuzun ili bulunamadı. İlinizi listeden seçin.',
+          errorMessage: fallbackErrorMessage,
+          pendingPoint: point,
         ),
       );
       return;
@@ -252,8 +270,8 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
         emit(
           state.copyWith(
             locating: false,
-            errorMessage:
-                'İller alınamadı. İnternet bağlantınızı kontrol edin.',
+            errorMessage: fallbackErrorMessage,
+            pendingPoint: point,
           ),
         );
         return;
@@ -265,8 +283,8 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
       emit(
         state.copyWith(
           locating: false,
-          errorMessage:
-              'Bulunduğunuz il Diyanet listesinde bulunamadı. Listeden seçin.',
+          errorMessage: fallbackErrorMessage,
+          pendingPoint: point,
         ),
       );
       return;
@@ -282,8 +300,8 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
       emit(
         state.copyWith(
           locating: false,
-          errorMessage:
-              'İlçeler alınamadı. İnternet bağlantınızı kontrol edin.',
+          errorMessage: fallbackErrorMessage,
+          pendingPoint: point,
         ),
       );
       return;
@@ -301,8 +319,8 @@ class LocationPickerCubit extends Cubit<LocationPickerState> {
       emit(
         state.copyWith(
           locating: false,
-          errorMessage:
-              'Bulunduğunuz il Diyanet listesinde bulunamadı. Listeden seçin.',
+          errorMessage: fallbackErrorMessage,
+          pendingPoint: point,
         ),
       );
       return;

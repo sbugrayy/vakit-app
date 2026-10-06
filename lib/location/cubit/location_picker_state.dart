@@ -3,6 +3,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:vakit/location/models/city.dart';
 import 'package:vakit/location/models/district.dart';
+import 'package:vakit/location/models/geo_point.dart';
 import 'package:vakit/location/turkish_text.dart';
 
 enum LocationPickerStep { cities, districts }
@@ -17,6 +18,7 @@ class LocationPickerState extends Equatable {
     this.loading = false,
     this.locating = false,
     this.errorMessage,
+    this.pendingPoint,
     this.saved = false,
   });
 
@@ -28,6 +30,7 @@ class LocationPickerState extends Equatable {
   final bool loading;
   final bool locating;
   final String? errorMessage;
+  final GeoPoint? pendingPoint;
   final bool saved;
 
   List<City> get visibleCities {
@@ -73,6 +76,8 @@ class LocationPickerState extends Equatable {
     bool? locating,
     String? errorMessage,
     bool clearErrorMessage = false,
+    GeoPoint? pendingPoint,
+    bool clearPendingPoint = false,
     bool? saved,
   }) {
     return LocationPickerState(
@@ -88,6 +93,9 @@ class LocationPickerState extends Equatable {
       errorMessage: clearErrorMessage
           ? null
           : (errorMessage ?? this.errorMessage),
+      pendingPoint: clearPendingPoint
+          ? null
+          : (pendingPoint ?? this.pendingPoint),
       saved: saved ?? this.saved,
     );
   }
@@ -102,6 +110,7 @@ class LocationPickerState extends Equatable {
     loading,
     locating,
     errorMessage,
+    pendingPoint,
     saved,
   ];
 }

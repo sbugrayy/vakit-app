@@ -111,6 +111,15 @@ class _LocationPickerViewState extends State<LocationPickerView> {
         final title = isDistricts
             ? displayName(state.selectedCity?.name ?? '')
             : 'Konum Seçimi';
+        final hasPendingPoint = state.pendingPoint != null;
+        final locateHintText = hasPendingPoint
+            ? 'Konumunuz alındı. İl ve ilçenizi seçtiğinizde '
+                  'kıble için kullanılacak.'
+            : 'İliniz ve ilçeniz otomatik bulunur. '
+                  'Koordinatlarınız hiçbir sunucuya gönderilmez.';
+        final locateHintColor = hasPendingPoint
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurfaceVariant;
 
         return PopScope(
           canPop: !isDistricts,
@@ -172,11 +181,10 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
-                          'İliniz ve ilçeniz otomatik bulunur. '
-                          'Koordinatlarınız hiçbir sunucuya gönderilmez.',
+                          locateHintText,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                            color: locateHintColor,
                           ),
                         ),
                       ],
@@ -231,7 +239,12 @@ class _LocationPickerViewState extends State<LocationPickerView> {
     LocationPickerState state,
     ThemeData theme,
   ) {
-    if (state.errorMessage != null) {
+    final isDistricts = state.step == LocationPickerStep.districts;
+    final isListEmpty = isDistricts
+        ? state.districts.isEmpty
+        : state.cities.isEmpty;
+
+    if (state.errorMessage != null && isListEmpty) {
       return _FailureContent(
         message: state.errorMessage!,
         onRetry: () {
@@ -245,6 +258,24 @@ class _LocationPickerViewState extends State<LocationPickerView> {
       );
     }
 
+    final list = _buildList(context, state, theme);
+    if (state.errorMessage != null) {
+      return Column(
+        children: [
+          _ErrorBanner(message: state.errorMessage!),
+          Expanded(child: list),
+        ],
+      );
+    }
+
+    return list;
+  }
+
+  Widget _buildList(
+    BuildContext context,
+    LocationPickerState state,
+    ThemeData theme,
+  ) {
     if (state.step == LocationPickerStep.cities) {
       final cities = state.visibleCities;
       return ListView.builder(
@@ -286,6 +317,52 @@ class _LocationPickerViewState extends State<LocationPickerView> {
               context.read<LocationPickerCubit>().selectDistrict(district),
         );
       },
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      color: colorScheme.errorContainer,
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xs,
+      ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(AppSpacing.radiusMd),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: colorScheme.onErrorContainer,
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                message,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onErrorContainer,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
