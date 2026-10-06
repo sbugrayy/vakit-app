@@ -21,6 +21,8 @@ import 'package:vakit/prayer_times/models/prayer_day.dart';
 import 'package:vakit/prayer_times/models/prayer_schedule.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
 import 'package:vakit/prayer_times/view/home_page.dart';
+import 'package:vakit/settings/models/app_settings.dart';
+import 'package:vakit/settings/repository/settings_store.dart';
 import 'package:vakit/shared/clock.dart';
 import 'package:vakit/theme/app_theme.dart';
 
@@ -30,6 +32,8 @@ class _MockPrayerTimesCubit extends MockCubit<PrayerTimesState>
     implements PrayerTimesCubit {}
 
 class _MockLocationStore extends Mock implements LocationStore {}
+
+class _MockSettingsStore extends Mock implements SettingsStore {}
 
 class _MockPrayerTimesRepository extends Mock
     implements PrayerTimesRepository {}
@@ -664,10 +668,14 @@ void main() {
         configure360dp(tester);
 
         final locationStore = _MockLocationStore();
+        final settingsStore = _MockSettingsStore();
         final repository = _MockPrayerTimesRepository();
         final notificationBridge = _MockNotificationBridge();
 
         when(locationStore.load).thenAnswer((_) async => null);
+        when(settingsStore.load).thenAnswer(
+          (_) async => const AppSettings(),
+        );
         when(
           notificationBridge.requestNotificationPermission,
         ).thenAnswer((_) async => true);
@@ -676,6 +684,7 @@ void main() {
           MultiRepositoryProvider(
             providers: [
               RepositoryProvider<LocationStore>.value(value: locationStore),
+              RepositoryProvider<SettingsStore>.value(value: settingsStore),
               RepositoryProvider<PrayerTimesRepository>.value(
                 value: repository,
               ),
@@ -703,10 +712,14 @@ void main() {
         configure360dp(tester);
 
         final locationStore = _MockLocationStore();
+        final settingsStore = _MockSettingsStore();
         final repository = _MockPrayerTimesRepository();
         final notificationBridge = _MockNotificationBridge();
 
         when(locationStore.load).thenAnswer((_) async => null);
+        when(settingsStore.load).thenAnswer(
+          (_) async => const AppSettings(),
+        );
         when(
           notificationBridge.requestNotificationPermission,
         ).thenAnswer((_) async => true);
@@ -717,6 +730,7 @@ void main() {
           MultiRepositoryProvider(
             providers: [
               RepositoryProvider<LocationStore>.value(value: locationStore),
+              RepositoryProvider<SettingsStore>.value(value: settingsStore),
               RepositoryProvider<PrayerTimesRepository>.value(
                 value: repository,
               ),

@@ -13,6 +13,7 @@ import 'package:vakit/prayer_times/models/prayer.dart';
 import 'package:vakit/prayer_times/models/prayer_day.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
 import 'package:vakit/prayer_times/widgets/time_format.dart';
+import 'package:vakit/settings/repository/settings_store.dart';
 import 'package:vakit/shared/clock.dart';
 import 'package:vakit/theme/app_spacing.dart';
 import 'package:vakit/theme/app_typography.dart';
@@ -31,6 +32,7 @@ class HomePage extends StatelessWidget {
       create: (context) {
         final cubit = PrayerTimesCubit(
           locationStore: context.read<LocationStore>(),
+          settingsStore: context.read<SettingsStore>(),
           repository: context.read<PrayerTimesRepository>(),
           notificationBridge: context.read<NotificationBridge>(),
           clock: context.read<Clock>(),

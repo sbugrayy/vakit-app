@@ -16,10 +16,14 @@ import 'package:vakit/prayer_times/models/prayer.dart';
 import 'package:vakit/prayer_times/models/prayer_day.dart';
 import 'package:vakit/prayer_times/models/prayer_schedule.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
+import 'package:vakit/settings/models/app_settings.dart';
+import 'package:vakit/settings/repository/settings_store.dart';
 
 import '../../helpers/fixed_clock.dart';
 
 class _MockLocationStore extends Mock implements LocationStore {}
+
+class _MockSettingsStore extends Mock implements SettingsStore {}
 
 class _MockPrayerTimesRepository extends Mock
     implements PrayerTimesRepository {}
@@ -39,6 +43,7 @@ void main() {
   const testTick = Duration(milliseconds: 10);
 
   late _MockLocationStore locationStore;
+  late _MockSettingsStore settingsStore;
   late _MockPrayerTimesRepository repository;
   late _MockNotificationBridge notificationBridge;
   late FixedClock clock;
@@ -55,6 +60,7 @@ void main() {
 
   setUp(() {
     locationStore = _MockLocationStore();
+    settingsStore = _MockSettingsStore();
     repository = _MockPrayerTimesRepository();
     notificationBridge = _MockNotificationBridge();
     clock = FixedClock(DateTime.utc(2026, 9, 30, 7));
@@ -62,6 +68,10 @@ void main() {
       days: days,
       source: PrayerDataSource.diyanet,
       fetchedAt: DateTime.utc(2026, 9, 30, 7),
+    );
+
+    when(() => settingsStore.load()).thenAnswer(
+      (_) async => const AppSettings(),
     );
 
     when(
@@ -146,6 +156,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -180,6 +191,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -227,6 +239,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -249,6 +262,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -282,6 +296,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -314,6 +329,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -357,6 +373,7 @@ void main() {
 
         final cubit = PrayerTimesCubit(
           locationStore: locationStore,
+          settingsStore: settingsStore,
           repository: repository,
           notificationBridge: notificationBridge,
           clock: clock,
@@ -389,6 +406,7 @@ void main() {
 
         final cubit = PrayerTimesCubit(
           locationStore: locationStore,
+          settingsStore: settingsStore,
           repository: repository,
           notificationBridge: notificationBridge,
           clock: clock,
@@ -433,6 +451,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -471,6 +490,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -514,6 +534,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -551,6 +572,7 @@ void main() {
       'refreshPermissionStatus Loaded olmayan durumda hiçbir şey yapmaz',
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -591,6 +613,7 @@ void main() {
       },
       build: () => PrayerTimesCubit(
         locationStore: locationStore,
+        settingsStore: settingsStore,
         repository: repository,
         notificationBridge: notificationBridge,
         clock: clock,
@@ -627,6 +650,7 @@ void main() {
 
         final cubit = PrayerTimesCubit(
           locationStore: locationStore,
+          settingsStore: settingsStore,
           repository: repository,
           notificationBridge: notificationBridge,
           clock: clock,
@@ -637,6 +661,76 @@ void main() {
         verify(() => notificationBridge.openExactAlarmSettings()).called(1);
 
         await cubit.close();
+      },
+    );
+
+    blocTest<PrayerTimesCubit, PrayerTimesState>(
+      'bildirim tercihi kapalı iken sync çağrısına enabled: false iletilir',
+      setUp: () {
+        when(() => locationStore.load()).thenAnswer((_) async => istanbul);
+        when(
+          () => settingsStore.load(),
+        ).thenAnswer(
+          (_) async => const AppSettings(notificationEnabled: false),
+        );
+        when(
+          () => repository.load(istanbul),
+        ).thenAnswer((_) async => prayerTimesResult);
+        when(
+          () => notificationBridge.sync(
+            locationLabel: any(named: 'locationLabel'),
+            days: any(named: 'days'),
+            enabled: any(named: 'enabled'),
+            districtId: any(named: 'districtId'),
+          ),
+        ).thenAnswer((_) async {});
+      },
+      build: () => PrayerTimesCubit(
+        locationStore: locationStore,
+        settingsStore: settingsStore,
+        repository: repository,
+        notificationBridge: notificationBridge,
+        clock: clock,
+        tick: testTick,
+      ),
+      act: (cubit) => cubit.load(),
+      verify: (_) {
+        verify(
+          () => notificationBridge.sync(
+            locationLabel: 'İSTANBUL',
+            days: days,
+            enabled: false,
+            districtId: '9541',
+          ),
+        ).called(1);
+      },
+    );
+
+    test(
+      'isClosed iken settingsStore.load sonrası emit edilmez',
+      () async {
+        when(() => locationStore.load()).thenAnswer((_) async => istanbul);
+        when(
+          () => repository.load(istanbul),
+        ).thenAnswer((_) async => prayerTimesResult);
+
+        late final PrayerTimesCubit cubit;
+        when(() => settingsStore.load()).thenAnswer((_) async {
+          await cubit.close();
+          return const AppSettings();
+        });
+
+        cubit = PrayerTimesCubit(
+          locationStore: locationStore,
+          settingsStore: settingsStore,
+          repository: repository,
+          notificationBridge: notificationBridge,
+          clock: clock,
+          tick: testTick,
+        );
+
+        await cubit.load();
+        expect(cubit.isClosed, isTrue);
       },
     );
 
@@ -668,6 +762,7 @@ void main() {
 
         cubit = PrayerTimesCubit(
           locationStore: locationStore,
+          settingsStore: settingsStore,
           repository: repository,
           notificationBridge: notificationBridge,
           clock: clock,
@@ -704,6 +799,7 @@ void main() {
 
         final cubit = PrayerTimesCubit(
           locationStore: locationStore,
+          settingsStore: settingsStore,
           repository: repository,
           notificationBridge: notificationBridge,
           clock: clock,

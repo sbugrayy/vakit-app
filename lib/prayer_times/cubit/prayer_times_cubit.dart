@@ -9,11 +9,13 @@ import 'package:vakit/notifications/repository/notification_bridge.dart';
 import 'package:vakit/prayer_times/cubit/prayer_times_state.dart';
 import 'package:vakit/prayer_times/models/prayer_schedule.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
+import 'package:vakit/settings/repository/settings_store.dart';
 import 'package:vakit/shared/clock.dart';
 
 class PrayerTimesCubit extends Cubit<PrayerTimesState> {
   PrayerTimesCubit({
     required this._locationStore,
+    required this._settingsStore,
     required this._repository,
     required this._notificationBridge,
     required this._clock,
@@ -21,6 +23,7 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
   }) : super(const PrayerTimesInitial());
 
   final LocationStore _locationStore;
+  final SettingsStore _settingsStore;
   final PrayerTimesRepository _repository;
   final NotificationBridge _notificationBridge;
   final Clock _clock;
@@ -49,11 +52,15 @@ class PrayerTimesCubit extends Cubit<PrayerTimesState> {
       if (isClosed) {
         return;
       }
+      final settings = await _settingsStore.load();
+      if (isClosed) {
+        return;
+      }
       try {
         await _notificationBridge.sync(
           locationLabel: location.districtName,
           days: result.days,
-          enabled: true,
+          enabled: settings.notificationEnabled,
           districtId: location.districtId,
         );
       } on PlatformException {

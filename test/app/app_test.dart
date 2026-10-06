@@ -14,10 +14,14 @@ import 'package:vakit/notifications/repository/notification_bridge.dart';
 import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
 import 'package:vakit/prayer_times/view/home_page.dart';
 import 'package:vakit/qibla/repository/heading_source.dart';
+import 'package:vakit/settings/models/app_settings.dart';
+import 'package:vakit/settings/repository/settings_store.dart';
 import 'package:vakit/shared/clock.dart';
 import 'package:vakit/shared/diyanet/diyanet_api.dart';
 
 class _MockLocationStore extends Mock implements LocationStore {}
+
+class _MockSettingsStore extends Mock implements SettingsStore {}
 
 class _MockPrayerTimesRepository extends Mock
     implements PrayerTimesRepository {}
@@ -34,6 +38,7 @@ class _MockHeadingSource extends Mock implements HeadingSource {}
 
 void main() {
   late _MockLocationStore locationStore;
+  late _MockSettingsStore settingsStore;
   late _MockPrayerTimesRepository prayerTimesRepository;
   late _MockDiyanetApi diyanetApi;
   late _MockNotificationBridge notificationBridge;
@@ -47,6 +52,7 @@ void main() {
 
   setUp(() {
     locationStore = _MockLocationStore();
+    settingsStore = _MockSettingsStore();
     prayerTimesRepository = _MockPrayerTimesRepository();
     diyanetApi = _MockDiyanetApi();
     notificationBridge = _MockNotificationBridge();
@@ -55,6 +61,9 @@ void main() {
     headingSource = _MockHeadingSource();
 
     when(() => locationStore.load()).thenAnswer((_) async => null);
+    when(() => settingsStore.load()).thenAnswer(
+      (_) async => const AppSettings(),
+    );
     when(
       () => notificationBridge.requestNotificationPermission(),
     ).thenAnswer((_) async => true);
@@ -63,6 +72,7 @@ void main() {
   Widget buildTestApp({RouterConfig<Object>? routerConfig}) {
     return App(
       locationStore: locationStore,
+      settingsStore: settingsStore,
       prayerTimesRepository: prayerTimesRepository,
       diyanetApi: diyanetApi,
       notificationBridge: notificationBridge,
@@ -97,6 +107,7 @@ void main() {
 
         final element = tester.element(find.byType(HomePage));
         expect(element.read<LocationStore>(), equals(locationStore));
+        expect(element.read<SettingsStore>(), equals(settingsStore));
         expect(
           element.read<PrayerTimesRepository>(),
           equals(prayerTimesRepository),
@@ -131,6 +142,30 @@ void main() {
         await tester.pumpWidget(buildTestApp());
         await tester.pump();
         expect(find.byType(HomePage), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'kayıtlı tercih dark iken MaterialApp.themeMode == ThemeMode.dark',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        when(() => settingsStore.load()).thenAnswer(
+          (_) async => const AppSettings(
+            themePreference: ThemePreference.dark,
+          ),
+        );
+
+        await tester.pumpWidget(buildTestApp());
+        await tester.pump();
+
+        final materialApp = tester.widget<MaterialApp>(
+          find.byType(MaterialApp),
+        );
+        expect(materialApp.themeMode, equals(ThemeMode.dark));
       },
     );
 
