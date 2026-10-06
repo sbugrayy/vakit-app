@@ -9,30 +9,52 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:vakit/location/models/selected_location.dart';
 import 'package:vakit/location/repository/location_store.dart';
+import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
 import 'package:vakit/qibla/cubit/qibla_cubit.dart';
 import 'package:vakit/qibla/cubit/qibla_state.dart';
+import 'package:vakit/qibla/cubit/qibla_time_cubit.dart';
 import 'package:vakit/qibla/models/heading_reading.dart';
 import 'package:vakit/qibla/repository/heading_source.dart';
 import 'package:vakit/qibla/view/qibla_page.dart';
+import 'package:vakit/shared/clock.dart';
 import 'package:vakit/theme/app_colors.dart';
 import 'package:vakit/theme/app_theme.dart';
 
+import '../../helpers/fixed_clock.dart';
+
 class _MockQiblaCubit extends MockCubit<QiblaState> implements QiblaCubit {}
+
+class _MockQiblaTimeCubit extends MockCubit<QiblaTimeState>
+    implements QiblaTimeCubit {}
 
 class _MockLocationStore extends Mock implements LocationStore {}
 
 class _MockHeadingSource extends Mock implements HeadingSource {}
 
+class _MockPrayerTimesRepository extends Mock
+    implements PrayerTimesRepository {}
+
 void main() {
+  const fallbackLocation = SelectedLocation(
+    cityId: '0',
+    cityName: 'FALLBACK',
+    districtId: '0',
+    districtName: 'FALLBACK',
+  );
+
   late _MockQiblaCubit mockCubit;
+  late _MockQiblaTimeCubit mockTimeCubit;
 
   setUpAll(() async {
+    registerFallbackValue(fallbackLocation);
     await initializeDateFormatting('tr');
   });
 
   setUp(() {
     mockCubit = _MockQiblaCubit();
+    mockTimeCubit = _MockQiblaTimeCubit();
     when(() => mockCubit.start()).thenAnswer((_) async {});
+    when(() => mockTimeCubit.load()).thenAnswer((_) async {});
   });
 
   void configure360dp(WidgetTester tester) {
@@ -44,17 +66,22 @@ void main() {
 
   Widget buildSubject({
     required QiblaState state,
+    QiblaTimeState timeState = const QiblaTimeState(),
     Brightness brightness = Brightness.light,
   }) {
     when(() => mockCubit.state).thenReturn(state);
+    when(() => mockTimeCubit.state).thenReturn(timeState);
     return MaterialApp(
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: brightness == Brightness.dark
           ? ThemeMode.dark
           : ThemeMode.light,
-      home: BlocProvider<QiblaCubit>.value(
-        value: mockCubit,
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider<QiblaCubit>.value(value: mockCubit),
+          BlocProvider<QiblaTimeCubit>.value(value: mockTimeCubit),
+        ],
         child: const QiblaView(),
       ),
     );
@@ -107,14 +134,20 @@ void main() {
       (tester) async {
         configure360dp(tester);
         when(() => mockCubit.state).thenReturn(const QiblaNeedsCoordinates());
+        when(
+          () => mockTimeCubit.state,
+        ).thenReturn(const QiblaTimeState(loaded: true));
 
         final router = GoRouter(
           initialLocation: '/kible',
           routes: [
             GoRoute(
               path: '/kible',
-              builder: (context, state) => BlocProvider<QiblaCubit>.value(
-                value: mockCubit,
+              builder: (context, state) => MultiBlocProvider(
+                providers: [
+                  BlocProvider<QiblaCubit>.value(value: mockCubit),
+                  BlocProvider<QiblaTimeCubit>.value(value: mockTimeCubit),
+                ],
                 child: const QiblaView(),
               ),
             ),
@@ -323,11 +356,130 @@ void main() {
     );
 
     testWidgets(
+      'Ready: açık ve koyu temada Kıble saati ve 11:32 görünür',
+      (tester) async {
+        configure360dp(tester);
+        const readyState = QiblaReady(
+          bearing: 151,
+          distanceKm: 2405.1,
+        );
+        final timeState = QiblaTimeState(
+          time: DateTime.utc(2026, 9, 30, 8, 32),
+          utcOffset: const Duration(hours: 3),
+          loaded: true,
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(
+              state: readyState,
+              timeState: timeState,
+              brightness: brightness,
+            ),
+          );
+          await tester.pump();
+
+          expect(find.text('Kıble saati'), findsOneWidget);
+          expect(find.text('11:32'), findsOneWidget);
+          expect(
+            find.text(
+              'Bu saatte güneş kıble yönündedir. '
+              'Pusula yoksa güneşe dönerek kıbleyi bulabilirsiniz.',
+            ),
+            findsOneWidget,
+          );
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'NeedsCoordinates: açık ve koyu temada Kıble saati ve 11:32 görünür',
+      (tester) async {
+        configure360dp(tester);
+        final timeState = QiblaTimeState(
+          time: DateTime.utc(2026, 9, 30, 8, 32),
+          utcOffset: const Duration(hours: 3),
+          loaded: true,
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(
+              state: const QiblaNeedsCoordinates(),
+              timeState: timeState,
+              brightness: brightness,
+            ),
+          );
+          await tester.pump();
+
+          expect(find.text('Kıble saati'), findsOneWidget);
+          expect(find.text('11:32'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'Unavailable: açık ve koyu temada Kıble saati ve 11:32 görünür',
+      (tester) async {
+        configure360dp(tester);
+        final timeState = QiblaTimeState(
+          time: DateTime.utc(2026, 9, 30, 8, 32),
+          utcOffset: const Duration(hours: 3),
+          loaded: true,
+        );
+
+        for (final brightness in [Brightness.light, Brightness.dark]) {
+          await tester.pumpWidget(
+            buildSubject(
+              state: const QiblaUnavailable('Pusula sensörü yok'),
+              timeState: timeState,
+              brightness: brightness,
+            ),
+          );
+          await tester.pump();
+
+          expect(find.text('Kıble saati'), findsOneWidget);
+          expect(find.text('11:32'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        }
+      },
+    );
+
+    testWidgets(
+      'time == null iken Kıble saati kartı gösterilmez',
+      (tester) async {
+        configure360dp(tester);
+        const readyState = QiblaReady(
+          bearing: 151,
+          distanceKm: 2405.1,
+        );
+        const timeState = QiblaTimeState(loaded: true);
+
+        await tester.pumpWidget(
+          buildSubject(
+            state: readyState,
+            timeState: timeState,
+          ),
+        );
+        await tester.pump();
+
+        expect(find.text('Kıble saati'), findsNothing);
+        expect(find.text('11:32'), findsNothing);
+        expect(find.byType(Card), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
       'QiblaPage bağımlılık sağlayıcılarla açılır ve cubit başlatılır',
       (tester) async {
         configure360dp(tester);
         final locationStore = _MockLocationStore();
         final headingSource = _MockHeadingSource();
+        final repository = _MockPrayerTimesRepository();
+        final clock = FixedClock(DateTime.utc(2026, 9, 30, 9));
 
         when(locationStore.load).thenAnswer(
           (_) async => const SelectedLocation(
@@ -345,12 +497,22 @@ void main() {
             longitude: any(named: 'longitude'),
           ),
         ).thenAnswer((_) => const Stream.empty());
+        when(() => repository.load(any())).thenAnswer(
+          (_) async => const PrayerTimesResult(
+            days: [],
+            source: PrayerDataSource.diyanet,
+          ),
+        );
 
         await tester.pumpWidget(
           MultiRepositoryProvider(
             providers: [
               RepositoryProvider<LocationStore>.value(value: locationStore),
               RepositoryProvider<HeadingSource>.value(value: headingSource),
+              RepositoryProvider<PrayerTimesRepository>.value(
+                value: repository,
+              ),
+              RepositoryProvider<Clock>.value(value: clock),
             ],
             child: const MaterialApp(
               home: QiblaPage(),

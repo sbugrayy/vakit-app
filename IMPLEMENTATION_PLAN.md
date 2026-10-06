@@ -54,7 +54,7 @@ Sesli uyarı **olmayacak** (Buğra, 2026-10-06; ilk karar da böyleydi).
 2. [x] Günlük veri yenileme (WorkManager, native Diyanet çekimi), agy 023
 3. [x] Ayarlar ekranı (bildirim aç/kapa, tema, konum, veri kaynağı), agy 024a/b
 4. [x] Aylık Vakitler ekranı, agy 025/025b
-5. [ ] Kıble saati kartı
+5. [x] Kıble saati kartı, agy 026/026b
 6. [ ] Konum yedeği (geokodlama başarısızsa koordinatı sakla, ili elle seçtir)
 7. [ ] `code-review` + `security-review`, bulguların düzeltilmesi
 8. [ ] PR `flutter-rewrite` → `main` (birleştirme Buğra'ya sorulur)
@@ -179,7 +179,7 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] agy 015b: native yön, EventChannel `com.sbugrayy.vakit/kible`. `TYPE_ROTATION_VECTOR` (yoksa ivmeölçer + manyetometre), `GeomagneticField` sapmasıyla gerçek kuzey, vektörle yumuşatma. JVM testli
 - [x] agy 015a: kıble açısı ve Kâbe'ye mesafe (bağımsız referansla ±0,1°: İstanbul 151,62°), `turnAngle`/`isAligned`, `HeadingSource`
 - [x] agy 016: Kıble ekranı (geçici). Pusula kadranı, açı, hizalama metni, kalibrasyon kartı, mesafe; koordinat yoksa "Konumumu bul"a yönlendirme (emülatörde doğrulandı); Ana Sayfa'da "Kıble" eylemi
-- [ ] Diyanet "kıble saati" kartı
+- [x] Diyanet "kıble saati" kartı (agy 026/026b, 2026-10-06): Kıble ekranında her durumda (koordinat ya da sensör yokken de). Emülatörde Ankara 11:39, Diyanet'le aynı; açık/koyu doğrulandı
 - [x] Koordinatlı konumla pusulanın cihazda denenmesi: gerçek telefonda kıble gösteriliyor (Buğra, 2026-10-03)
 
 ### Faz 6 — Cila ve teslim

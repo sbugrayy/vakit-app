@@ -8,9 +8,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show NumberFormat;
 import 'package:vakit/location/repository/location_store.dart';
+import 'package:vakit/prayer_times/repository/prayer_times_repository.dart';
+import 'package:vakit/prayer_times/widgets/time_format.dart';
 import 'package:vakit/qibla/cubit/qibla_cubit.dart';
 import 'package:vakit/qibla/cubit/qibla_state.dart';
+import 'package:vakit/qibla/cubit/qibla_time_cubit.dart';
 import 'package:vakit/qibla/repository/heading_source.dart';
+import 'package:vakit/shared/clock.dart';
 import 'package:vakit/theme/app_spacing.dart';
 
 class QiblaPage extends StatelessWidget {
@@ -18,15 +22,30 @@ class QiblaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) {
-        final cubit = QiblaCubit(
-          locationStore: context.read<LocationStore>(),
-          headingSource: context.read<HeadingSource>(),
-        );
-        unawaited(cubit.start());
-        return cubit;
-      },
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) {
+            final cubit = QiblaCubit(
+              locationStore: context.read<LocationStore>(),
+              headingSource: context.read<HeadingSource>(),
+            );
+            unawaited(cubit.start());
+            return cubit;
+          },
+        ),
+        BlocProvider(
+          create: (context) {
+            final cubit = QiblaTimeCubit(
+              locationStore: context.read<LocationStore>(),
+              repository: context.read<PrayerTimesRepository>(),
+              clock: context.read<Clock>(),
+            );
+            unawaited(cubit.load());
+            return cubit;
+          },
+        ),
+      ],
       child: const QiblaView(),
     );
   }
@@ -59,6 +78,81 @@ class QiblaView extends StatelessWidget {
   }
 }
 
+class QiblaTimeCard extends StatelessWidget {
+  const QiblaTimeCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<QiblaTimeCubit, QiblaTimeState>(
+      builder: (context, state) {
+        final time = state.time;
+        final utcOffset = state.utcOffset;
+        if (time == null || utcOffset == null) {
+          return const SizedBox.shrink();
+        }
+
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.wb_sunny_outlined,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Kıble saati',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            formatClock(time, utcOffset),
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Bu saatte güneş kıble yönündedir. '
+                        'Pusula yoksa güneşe dönerek kıbleyi bulabilirsiniz.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _NeedsCoordinatesView extends StatelessWidget {
   const _NeedsCoordinatesView();
 
@@ -66,7 +160,7 @@ class _NeedsCoordinatesView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -95,6 +189,8 @@ class _NeedsCoordinatesView extends StatelessWidget {
               },
               child: const Text('Konumumu bul'),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            const QiblaTimeCard(),
           ],
         ),
       ),
@@ -111,7 +207,7 @@ class _UnavailableView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -129,6 +225,8 @@ class _UnavailableView extends StatelessWidget {
                 color: theme.colorScheme.onSurface,
               ),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            const QiblaTimeCard(),
           ],
         ),
       ),
@@ -243,6 +341,8 @@ class _ReadyView extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+            const SizedBox(height: AppSpacing.lg),
+            const QiblaTimeCard(),
           ],
         ),
       ),
