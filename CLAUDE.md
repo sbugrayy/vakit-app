@@ -320,6 +320,19 @@ flutter run -d emulator-5554
 flutter build apk --debug
 ```
 
+- **Yayın derlemesi** (2026-10-06):
+  - Komut: `flutter build apk --release --split-per-abi`. Telefona
+    `app-arm64-v8a-release.apk` kurulur.
+  - İmza anahtarı `~/.android-keys/vakit-release.jks` (alias `vakit`).
+    Parolalar `android/key.properties`'te; bu dosya git dışı ve repoya asla
+    girmez.
+  - Anahtar kaybolursa yayınlanmış uygulama güncellenemez; yedeğini Buğra
+    alır.
+  - `key.properties` yoksa yayın derlemesi debug anahtarıyla imzalanır
+    (`android/app/build.gradle.kts`).
+  - Debug ile yayın sürümünün imzası farklı. Aynı cihazda birinden ötekine
+    geçmek için önce `adb uninstall com.sbugrayy.vakit` gerekir; uygulama
+    verisi silinir.
 - Dosyaları **Write/Edit aracıyla** yaz. PowerShell `Set-Content`/`Out-File`
   BOM ekler; agy ayar dosyasında bu sessiz kilitlenme yapıyor.
 - agy ve `tool/*.sh` Bash aracıyla çalıştırılır.

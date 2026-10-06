@@ -46,6 +46,21 @@ yürüyor.
 
 ## 4. Fazlar
 
+### İş listesi (2026-10-06, Buğra: "sırasıyla tüm işleri tamamla")
+
+Sesli uyarı **olmayacak** (Buğra, 2026-10-06; ilk karar da böyleydi).
+
+1. [x] Yayın sürümü imzası ve release APK
+2. [ ] Günlük veri yenileme (WorkManager, native Diyanet çekimi)
+3. [ ] Ayarlar ekranı (bildirim aç/kapa, tema, konum, veri kaynağı)
+4. [ ] Aylık Vakitler ekranı
+5. [ ] Kıble saati kartı
+6. [ ] Konum yedeği (geokodlama başarısızsa koordinatı sakla, ili elle seçtir)
+7. [ ] `code-review` + `security-review`, bulguların düzeltilmesi
+8. [ ] PR `flutter-rewrite` → `main` (birleştirme Buğra'ya sorulur)
+
+Kapsam dışı: Stitch tasarımı (Buğra'nın adımı), AGP 9 / Gradle 9.1 (büyük indirme).
+
 ### Sıradaki adımlar (2026-10-03 akşamı itibarıyla)
 
 1. **Buğra:** `design/STITCH_PROMPTS.md` ile Stitch'te ekranları üretip `design/stitch/` altına koymak (Faz 1). Ekranlar şu an geçici tasarımla çalışıyor.
@@ -171,7 +186,7 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
   - Ana dosya ve Play Store simgesi: `design/logo/` (SVG + 512 px PNG)
   - Emülatörde uygulama çekmecesinde doğrulandı
   - Bildirim panelindeki uygulama simgesi güncelleme sonrası eski Flutter logosu olarak kaldı. Sistem arayüzünün önbelleği olduğu düşünülüyor; yeniden başlatmadan sonra bakılacak
-- [ ] Release imzası (keystore yolu ve parolalar env değişkeninden; repoya sır girmez)
+- [x] Release imzası (2026-10-06). Anahtar `~/.android-keys/vakit-release.jks`, parolalar `android/key.properties` (git dışı). `flutter build apk --release --split-per-abi` → telefon için `app-arm64-v8a-release.apk` (17,9 MB). Emülatörde temiz kurulum, Ankara vakitleri Diyanet'le birebir, bildirim çalışıyor
 - [ ] README, `code-review` ve `security-review`
 - [ ] Gerçek telefonda uçtan uca deneme
 - [ ] PR: `flutter-rewrite` → `main`
