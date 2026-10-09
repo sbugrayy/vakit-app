@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(agy -p:*)",
+      "Bash(agy models:*)",
+      "Bash(agy --version)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(dart format:*)",
+      "Bash(tool/verify_agy.sh:*)",
+      "Bash(python tool/agy_rapor.py:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)"
+    ]
+  }
+}

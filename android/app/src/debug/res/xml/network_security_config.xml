@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Geliştirme makinesindeki TLS denetimi (örn. Norton) nedeniyle emülatörde
+    özel kök sertifikaya güvenebilmek için yalnız debug derlemesinde kullanıcı
+    sertifikalarına (user) izin verilir.
+-->
+<network-security-config>
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
