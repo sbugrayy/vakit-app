@@ -31,6 +31,7 @@ yürüyor.
 | agy çağrısı | `--mode accept-edits` **kullanılmıyor**: izin listesini atlıyor (duman testinde köke yazdı). Bayraksız çağrıda izinsiz yazma reddediliyor | 2026-10-02 |
 | Yığın | flutter_bloc (Cubit), go_router, dio, equatable, intl 0.20.2, very_good_analysis, bloc_test, mocktail | 2026-10-02 |
 | Git | `flutter-rewrite` dalı; MVP'de PR ile `main`'e. Claude commit + push eder | 2026-10-02 |
+| Git (sonra) | PR #1 2026-10-09'da birleşti. Yeni işler `main`'den açılan dallarda, PR ile; birleştirme Buğra'da | 2026-10-09 |
 
 ## 3. Eski uygulamadan çıkan dersler
 
@@ -63,7 +64,7 @@ Sesli uyarı **olmayacak** (Buğra, 2026-10-06; ilk karar da böyleydi).
    - Rotation-vector yolunda doğruluk `event.accuracy`'den güncellenmiyor; pusula hep "güvenilmez" olabilir.
    - Bildirime giden günler sıralanmıyor/tekilleştirilmiyor.
    - Temizlik: 1 sn'lik zamanlayıcı her tikte `PrayerSchedule` kuruyor ve arka planda duruyor; WorkManager ilk çalıştırmada gereksiz indirme; `load()` yalnız `PrayerTimesException` yakalıyor; kıble hata dalı ikisi de aynı mesaj; merkez ilçe kuralı iki yerde.
-8. [x] PR `flutter-rewrite` → `main` açıldı (2026-10-09, Buğra'nın isteğiyle); birleştirme Buğra'da
+8. [x] PR #1 `flutter-rewrite` → `main` açıldı ve Buğra birleştirdi (2026-10-09)
 
 Kapsam dışı: Stitch tasarımı (Buğra'nın adımı), AGP 9 / Gradle 9.1 (büyük indirme).
 
@@ -203,7 +204,7 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] Release imzası (2026-10-06). Anahtar `~/.android-keys/vakit-release.jks`, parolalar `android/key.properties` (git dışı). `flutter build apk --release --split-per-abi` → telefon için `app-arm64-v8a-release.apk` (17,9 MB). Emülatörde temiz kurulum, Ankara vakitleri Diyanet'le birebir, bildirim çalışıyor
 - [ ] README, `code-review` ve `security-review`
 - [ ] Gerçek telefonda uçtan uca deneme
-- [x] PR: `flutter-rewrite` → `main` açıldı (2026-10-09); birleştirme Buğra'da
+- [x] PR #1: `flutter-rewrite` → `main`, 2026-10-09'da birleşti
 
 ### iOS — ERTELENDİ (2026-10-05, Buğra'nın kararı)
 

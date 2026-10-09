@@ -20,7 +20,7 @@ olmadan `lib/`, `test/` ya da `android/app/src/` altına elle yazma.
 
 - `git status --porcelain` boş olmalı. Değilse önce commit et ya da sor; agy'nin
   değişikliklerini başkalarından ayırmanın tek yolu bu.
-- Dal `flutter-rewrite` ya da ondan açılmış bir iş dalı. Asla `main`.
+- `main`'den açılmış bir iş dalı (`feat/…`, `fix/…`). Asla doğrudan `main`.
 - İş tek bir brife sığmalı: en fazla ~6–8 dosya ve tek bir sorumluluk. Büyükse
   böl; agy küçük ve net görevlerde çok daha isabetli.
 - Gereken paket ya da Android izni varsa agy'den önce **Claude** ekler
