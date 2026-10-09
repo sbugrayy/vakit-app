@@ -7,8 +7,8 @@ değiştikçe bu dosyayı güncel tut.
 ## Proje Nedir
 
 **Vakit**: Türkiye odaklı namaz vakitleri ve kıble uygulaması (Android). Flutter
-ile sıfırdan yazılıyor. İlk sürüm Google AI Studio'da Kotlin/Compose ile
-üretilmişti; `main` dalında ve git geçmişinde duruyor. O sürüm iki yüzden
+ile sıfırdan yazıldı ve 2026-10-09'da `main`'e birleşti (PR #1). İlk sürüm
+Google AI Studio'da Kotlin/Compose ile üretilmişti; git geçmişinde duruyor. O sürüm iki yüzden
 bırakıldı: tasarım (açık/koyu temada tutarsız, sabit renkler) ve bildirim
 çubuğunda istenen davranışa ulaşılamaması.
 
@@ -169,7 +169,7 @@ Duman testleri (2026-10-02, kayıtlar `.agy/runs/000*.jsonl`):
 
 ## Görev Akışı (her kod işi)
 
-1. `git status` temiz, dal `flutter-rewrite` (ya da ondan açılmış bir iş dalı).
+1. `git status` temiz, `main`'den açılmış bir iş dalındasın (ör. `fix/konum-yedegi`).
 2. Brif `.agy/briefs/NNN-konu.md` (şablon `agy-gorev` skill'inde). Dokunulacak
    dosyalar **tek tek** yazılır; ilgili `ANTIGRAVITY_CHECKLIST.md` maddeleri eklenir.
 3. agy arka planda çalışır, çıktı `.agy/runs/NNN.jsonl`. Özet için
@@ -189,8 +189,9 @@ Duman testleri (2026-10-02, kayıtlar `.agy/runs/000*.jsonl`):
 
 - Uzak depo: `github.com/sbugrayy/vakit-app`, Buğra'nın kişisel reposu.
   **Claude commit'ler ve push eder.**
-- Çalışma dalı `flutter-rewrite`. `main` eski Kotlin sürümü; MVP bitince PR ile
-  birleşir. `main`'e doğrudan push yok.
+- `main` Flutter sürümü (PR #1, 2026-10-09). Her iş `main`'den açılan bir dalda
+  yapılır (`feat/…`, `fix/…`, `docs/…`) ve PR ile birleşir; birleştirmeyi
+  Buğra yapar. `main`'e doğrudan push yok. `flutter-rewrite` tarihî dal.
 - Commit mesajı Türkçe ve Türkçe karakterli. Konu satırı Conventional Commits
   (`feat:`, `fix:`, `docs:`, `chore:`, `test:`, `refactor:`), gövde madde madde
   ne ve neden.

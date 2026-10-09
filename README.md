@@ -8,8 +8,8 @@ Türkiye için namaz vakitleri ve kıble uygulaması (Android, Flutter).
   geri sayım, uygulama kapalıyken de.
 - **Kıble pusulası**: manyetik sapması düzeltilmiş, gerçek kuzeye göre.
 
-> Durum: Flutter ile yeniden yazım sürüyor (`flutter-rewrite` dalı). İlk sürüm
-> (Kotlin/Compose) `main` dalında. İlerleme için `IMPLEMENTATION_PLAN.md`.
+> Durum: Flutter sürümü `main`'de (2026-10-09). İlk sürüm (Kotlin/Compose) git
+> geçmişinde. İlerleme ve açık işler için `IMPLEMENTATION_PLAN.md`.
 
 ## Çalıştırma
 
