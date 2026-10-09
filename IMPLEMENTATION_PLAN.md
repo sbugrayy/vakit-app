@@ -56,8 +56,14 @@ Sesli uyarı **olmayacak** (Buğra, 2026-10-06; ilk karar da böyleydi).
 4. [x] Aylık Vakitler ekranı, agy 025/025b
 5. [x] Kıble saati kartı, agy 026/026b
 6. [x] Konum yedeği (geokodlama başarısızsa koordinatı sakla, ili elle seçtir), agy 027/027b/027c
-7. [ ] `code-review` + `security-review`, bulguların düzeltilmesi
-8. [ ] PR `flutter-rewrite` → `main` (birleştirme Buğra'ya sorulur)
+7. [~] `code-review` + `security-review` yapıldı (2026-10-06). Güvenlik temiz; tek öneri `allowBackup`. Kod incelemesinin 5 doğruluk adayı **açık**:
+   - ScheduleRefresher: indirme sırasında konum değişirse eski ilçe verisi yazılabiliyor.
+   - Konum yedeği: saklanan koordinat elle seçilen uzak ile de iliştiriliyor.
+   - Ters geokodlamada zaman aşımı yok; "Konumumu bul" takılı kalabiliyor.
+   - Rotation-vector yolunda doğruluk `event.accuracy`'den güncellenmiyor; pusula hep "güvenilmez" olabilir.
+   - Bildirime giden günler sıralanmıyor/tekilleştirilmiyor.
+   - Temizlik: 1 sn'lik zamanlayıcı her tikte `PrayerSchedule` kuruyor ve arka planda duruyor; WorkManager ilk çalıştırmada gereksiz indirme; `load()` yalnız `PrayerTimesException` yakalıyor; kıble hata dalı ikisi de aynı mesaj; merkez ilçe kuralı iki yerde.
+8. [x] PR `flutter-rewrite` → `main` açıldı (2026-10-09, Buğra'nın isteğiyle); birleştirme Buğra'da
 
 Kapsam dışı: Stitch tasarımı (Buğra'nın adımı), AGP 9 / Gradle 9.1 (büyük indirme).
 
@@ -197,7 +203,7 @@ tutucu token'ları) yazıldı. Cubit'ler ve durumlar kalıcı; Stitch gelince
 - [x] Release imzası (2026-10-06). Anahtar `~/.android-keys/vakit-release.jks`, parolalar `android/key.properties` (git dışı). `flutter build apk --release --split-per-abi` → telefon için `app-arm64-v8a-release.apk` (17,9 MB). Emülatörde temiz kurulum, Ankara vakitleri Diyanet'le birebir, bildirim çalışıyor
 - [ ] README, `code-review` ve `security-review`
 - [ ] Gerçek telefonda uçtan uca deneme
-- [ ] PR: `flutter-rewrite` → `main`
+- [x] PR: `flutter-rewrite` → `main` açıldı (2026-10-09); birleştirme Buğra'da
 
 ### iOS — ERTELENDİ (2026-10-05, Buğra'nın kararı)
 
